@@ -1,9 +1,7 @@
-// FoodCategories.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FoodTypes from '../components/FoodTypes';
 import RecipesList from '../components/RecipesList';
-
 
 export const FoodCategories = () => {
     const [categories, setCategories] = useState([]);
@@ -59,8 +57,6 @@ export const FoodCategories = () => {
         }
     };
 
-    const selectedDishes = dishes.filter(dish => dish.categoryid === selectedCategory);
-
     return (
         <div className="food-categories-container">
             <FoodTypes 
@@ -70,30 +66,12 @@ export const FoodCategories = () => {
                 refreshCategories={refreshCategories}
             />
             
-            <div className="dish-list">
-                {!selectedCategory ? (
-                    <div className="message-container">
-                <p>תבחרי קטגוריה על מנת לראות את המנות</p>
-            </div>
-                ) : (
-                    <>
-                        <h2>מאכלים בקטגוריה: {selectedCategoryName}</h2>
-                        <ul>
-                            {selectedDishes.length > 0 ? (
-                                selectedDishes.map((dish) => (
-                                    <li key={dish.dishid} onClick={() => handleDishClick(dish.dishid)}>
-                                        <span>{dish.name}</span>: {dish.description}
-                                    </li>
-                                ))
-                            ) : (
-                                <div className="message-container">
-                                    <p>עדיין אין מנות בקטגוריה הזו</p>
-                                </div>
-                            )}
-                        </ul>
-                    </>
-                )}
-            </div>
+            <RecipesList 
+                dishes={dishes}
+                selectedCategory={selectedCategory}
+                selectedCategoryName={selectedCategoryName}
+                onDishClick={handleDishClick}
+            />
         </div>
     );
 };

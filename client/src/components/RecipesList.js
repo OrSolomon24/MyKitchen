@@ -17,8 +17,8 @@ const RecipesList = ({ dishes, selectedCategory, selectedCategoryName, onDishCli
             {selectedDishes.length > 0 ? (
               selectedDishes.map((dish) => (
                 <li key={dish.dishid} onClick={() => onDishClick(dish.dishid)}>
-                  <span>{dish.name}</span>: {dish.description}
-                </li>
+          <span className="dish-name">{dish.name}</span>: {dish.description}
+          </li>
               ))
             ) : (
               <div className="message-container">

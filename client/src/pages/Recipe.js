@@ -19,7 +19,6 @@ export const Recipe = () => {
           <iframe 
             src={dish.url} 
             title={dish.name} 
-            frameBorder="0" 
             allowFullScreen 
           />
         </div>

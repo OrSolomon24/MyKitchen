@@ -90,3 +90,7 @@
   color: inherit;
   background-color: transparent;
 }
+.dish-name {
+  font-weight: bold; /* Makes the text bold */
+}
+
