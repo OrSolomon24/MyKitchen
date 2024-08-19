@@ -94,3 +94,56 @@
   font-weight: bold; /* Makes the text bold */
 }
 
+/* General styling for inputs and textareas */
+input[type="text"], textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 1em;
+  color: #34672d;
+  box-sizing: border-box; /* Ensures padding is included in width */
+  transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+}
+
+input[type="text"]:focus, textarea:focus {
+  border-color: #34672d;
+  box-shadow: 0 0 5px rgba(52, 103, 45, 0.2);
+  outline: none; /* Remove default outline */
+}
+
+textarea {
+  min-height: 100px; /* Makes textareas taller */
+  resize: vertical; /* Allows vertical resizing only */
+}
+
+/* Optional: Style for buttons to make them more distinct */
+.save-button, .edit-button {
+  background-color: #34672d;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s;
+}
+
+.save-button:hover, .edit-button:hover {
+  background-color: #285e2a;
+}
+
+
+/* Recipe.css */
+.recipe-section textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box; /* Ensures padding is included in width */
+  min-height: 100px; /* Adjust as needed */
+  resize: vertical; /* Allows vertical resizing */
+  font-family: Arial, sans-serif; /* Consistent font family */
+  font-size: 1em; /* Consistent font size */
+}
