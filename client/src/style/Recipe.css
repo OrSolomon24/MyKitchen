@@ -1,0 +1,93 @@
+.recipe-container {
+  padding: 20px;
+  border-radius: 10px;
+  text-align: right;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.recipe-title {
+  font-size: 2em;
+  margin-bottom: 20px;
+  text-align: center;
+  color: white;
+}
+
+.iframe-container {
+  width: 100%;
+  height: 80vh;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.iframe-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 10px;
+}
+
+.recipe-details {
+  width: 60%;
+  align-self: center;
+  margin-top: 20px;
+}
+
+.recipe-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #ffffff46;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-section h2 {
+  margin-bottom: 10px;
+  font-size: 1.5em;
+  color: white;
+}
+
+.recipe-section p,
+.recipe-section ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  color: white;
+}
+
+.recipe-section ul li {
+  margin-bottom: 5px;
+}
+
+/* תמיכה נוספת ב-RTL */
+
+
+.recipe-section ul li::before {
+  content: "•";
+  margin-left: 5px;
+  display: inline-block;
+  color: white;
+}
+
+.ingredients-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  color: white;
+}
+
+.ingredients-list li {
+  cursor: default;
+  user-select: text;
+  pointer-events: none;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ingredients-list li:hover {
+  text-decoration: none;
+  color: inherit;
+  background-color: transparent;
+}

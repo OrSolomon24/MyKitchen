@@ -1,0 +1,71 @@
+/* Base styles */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Space between image and nav */
+  padding: 1rem;
+  color: white;
+}
+
+.navbar img {
+  height: 50px; /* Adjust size as needed */
+}
+
+.navbar nav {
+  display: flex;
+  gap: 1rem; /* Space between nav items */
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-family: 'Arial', sans-serif;
+  font-weight: bold; 
+  transition: color 0.3s;
+}
+
+.navbar a:hover {
+  color: #ddd;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: row; /* Ensure items stay in a row on mobile */
+    align-items: center; /* Center items vertically */
+    padding: 0.5rem;
+  }
+
+  .navbar img {
+    height: 60px; /* Increase size for mobile */
+  }
+
+  .navbar nav {
+    margin-left: auto; /* Push nav to the right */
+    gap: 0.5rem; /* Reduce gap between nav items on mobile */
+  }
+
+  .navbar a {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.5rem;
+  }
+
+  .navbar img {
+    height: 70px; /* Further increase size for smaller screens */
+  }
+
+  .navbar nav {
+    margin-left: auto; /* Push nav to the right */
+    gap: 0.5rem; /* Reduce gap between nav items on mobile */
+  }
+
+  .navbar a {
+    font-size: 0.8rem;
+  }
+}
