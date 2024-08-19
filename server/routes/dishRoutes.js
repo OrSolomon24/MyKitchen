@@ -25,4 +25,29 @@ router.post('/dish', async (req, res) => {
   }
 });
 
+router.patch('/dish/:id', async (req, res) => {
+  try {
+    const updatedDish = await Dish.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedDish) {
+      return res.status(404).json({ message: 'Dish not found' });
+    }
+    res.json(updatedDish);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.delete('/dish/:id', async (req, res) => {
+  try {
+    const deletedDish = await Dish.findByIdAndDelete(req.params.id);
+    if (!deletedDish) {
+      return res.status(404).json({ message: 'Dish not found' });
+    }
+    res.json({ message: 'Dish deleted successfully' });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+
 module.exports = router;

@@ -4,7 +4,7 @@ const dishSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: String,
   ingredients: [String],
-  instructions: String,
+  instruction: String,
   url: String,
   categoryid: { type: Number },
   dishid: { type: Number }
