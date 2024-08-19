@@ -8,7 +8,7 @@ export const AddRecipe = () => {
   const [recipeName, setRecipeName] = useState('');
   const [recipeDescription, setRecipeDescription] = useState('');
   const [ingredients, setIngredients] = useState('');
-  const [instructions, setInstructions] = useState('');
+  const [instruction, setInstruction] = useState('');
   const [recipeLink, setRecipeLink] = useState('');
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export const AddRecipe = () => {
       name: recipeName,
       description: recipeDescription,
       ingredients: ingredients || '',
-      instructions: instructions || '',
+      instruction: instruction || '',
       url: formType === 'link' ? recipeLink : '',
     };
 
@@ -83,7 +83,7 @@ export const AddRecipe = () => {
       setRecipeName('');
       setRecipeDescription('');
       setIngredients('');
-      setInstructions('');
+      setInstruction('');
       setRecipeLink('');
       setSelectedCategories([]);
     } catch (error) {
@@ -128,12 +128,12 @@ export const AddRecipe = () => {
                 value={ingredients}
                 onChange={(e) => setIngredients(e.target.value)}
               />
-              <label htmlFor="instructions">הוראות הכנה:</label>
+              <label htmlFor="instruction">הוראות הכנה:</label>
               <textarea
-                id="instructions"
+                id="instruction"
                 placeholder="הזן את הוראות ההכנה"
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
+                value={instruction}
+                onChange={(e) => setInstruction(e.target.value)}
               />
             </>
           )}

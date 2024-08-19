@@ -7,10 +7,17 @@
   flex-direction: column;
 }
 
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Space between title and buttons */
+}
+
 .recipe-title {
-  font-size: 2em;
+  font-size: 1.5em;
   margin-bottom: 20px;
   text-align: center;
+  margin: 0;
   color: #34672d;
 }
 
@@ -60,9 +67,7 @@
   margin-bottom: 5px;
 }
 
-/* תמיכה נוספת ב-RTL */
-
-
+/* RTL support */
 .recipe-section ul li::before {
   content: "•";
   margin-left: 5px;
@@ -90,6 +95,7 @@
   color: inherit;
   background-color: transparent;
 }
+
 .dish-name {
   font-weight: bold; /* Makes the text bold */
 }
@@ -118,7 +124,7 @@ textarea {
 }
 
 /* Optional: Style for buttons to make them more distinct */
-.save-button, .edit-button {
+.save-button, .edit-button, .delete-button {
   background-color: #34672d;
   color: #fff;
   border: none;
@@ -127,23 +133,28 @@ textarea {
   cursor: pointer;
   font-size: 1em;
   transition: background-color 0.3s;
+  margin-top: 5%;
+  margin-bottom: 5%;
 }
 
-.save-button:hover, .edit-button:hover {
+.save-button:hover, .edit-button:hover, .delete-button:hover {
   background-color: #285e2a;
 }
 
+.delete-button {
+  background-color: #f44336; /* Red for delete */
+}
 
-/* Recipe.css */
-.recipe-section textarea {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  box-sizing: border-box; /* Ensures padding is included in width */
-  min-height: 100px; /* Adjust as needed */
-  resize: vertical; /* Allows vertical resizing */
-  font-family: Arial, sans-serif; /* Consistent font family */
-  font-size: 1em; /* Consistent font size */
+.delete-button:hover {
+  background-color: #c62828;
+}
+
+.recipe-details textarea {
+  white-space: pre-line; /* Preserve line breaks */
+}
+.buttons-container {
+  display: flex;
+  justify-content: center; /* Centers buttons horizontally */
+  gap: 20px; /* Adjusts space between buttons */
+  margin-top: 20px; /* Adds space above the button container */
 }

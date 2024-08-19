@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import '../style/Recipe.css';
-import { FaPencilAlt } from 'react-icons/fa';
+import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 
 export const Recipe = () => {
   const { state } = useLocation();
+  const navigate = useNavigate(); // Add useNavigate to redirect after deletion
   const [dish, setDish] = useState(state?.dish || { ingredients: [] });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -34,31 +35,60 @@ export const Recipe = () => {
     }));
   };
 
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this recipe?');
+
+    if (!confirmDelete) {
+      return; // Abort deletion if the user cancels
+    }
+
+    try {
+      console.log('Deleting dish:', dish._id); // Debugging line
+      const response = await fetch(`http://localhost:5000/api/food/dish/${dish._id}`, {
+        method: 'DELETE',
+      });
+
+      console.log('Response status:', response.status); // Debugging line
+
+      if (!response.ok) throw new Error(`Failed to delete dish. Status: ${response.status}`);
+
+      const result = await response.json();
+      console.log('Delete result:', result); // Debugging line
+
+      navigate('/'); // Redirect to home or list of dishes after deletion
+    } catch (error) {
+      console.error('Error deleting dish:', error);
+    }
+  };
+
   const renderField = (label, field, type = 'text') => (
     <section className="recipe-section">
       <h2>{label}</h2>
       {isEditing ? (
         type === 'textarea' ? (
           <textarea
-            value={field === 'ingredients' ? dish[field].join('\n') : dish[field]}
+            value={field === 'ingredients' ? dish[field]?.join('\n') : dish[field] || ''}
             onChange={(e) => handleChange(field, e.target.value)}
           />
         ) : (
           <input
             type="text"
-            value={dish[field]}
+            value={dish[field] || ''}
             onChange={(e) => handleChange(field, e.target.value)}
           />
         )
       ) : field === 'ingredients' ? (
         <ul className="ingredients-list">
-          {dish[field].map((item, index) => <li key={index}>{item}</li>)}
+          {dish[field]?.map((item, index) => <li key={index}>{item}</li>)}
         </ul>
+      ) : field === 'instruction' ? (
+        <p dangerouslySetInnerHTML={{ __html: (dish[field] || '').replace(/\n/g, '<br/>') }} />
       ) : (
-        <p>{dish[field]}</p>
+        <p>{dish[field] || ''}</p>
       )}
     </section>
   );
+  
 
   return (
     <div className="recipe-container" dir="rtl">
@@ -73,23 +103,34 @@ export const Recipe = () => {
           <span className="dish-name">{dish.name}</span>
         )}
       </h1>
-      <button 
-        onClick={() => isEditing ? handleSave() : setIsEditing(true)} 
-        className={isEditing ? "save-button" : "edit-button"}
-      >
-        {isEditing ? 'שמור שינויים' : <><FaPencilAlt /> ערוך מתכון</>}
-      </button>
+
       {dish.url ? (
         <div className="iframe-container">
+          {renderField('תיאור', 'description', 'textarea')}
           <iframe src={dish.url} title={dish.name} allowFullScreen />
         </div>
       ) : (
         <div className="recipe-details">
           {renderField('תיאור', 'description', 'textarea')}
           {renderField('מרכיבים', 'ingredients', 'textarea')}
-          {renderField('הוראות הכנה', 'instraction', 'textarea')} {/* Ensure field name is correct */}
+          {renderField('הוראות הכנה', 'instruction', 'textarea')} {/* Ensure field name is correct */}
         </div>
       )}
+
+      <div className="buttons-container">
+        <button 
+          onClick={() => isEditing ? handleSave() : setIsEditing(true)} 
+          className={isEditing ? "save-button" : "edit-button"}
+        >
+          {isEditing ? 'שמור שינויים' : <><FaPencilAlt /> ערוך מתכון</>}
+        </button>
+        <button 
+          onClick={handleDelete}
+          className="delete-button"
+        >
+          <FaTrash /> מחק מתכון
+        </button>
+      </div>
     </div>
   );
 };
