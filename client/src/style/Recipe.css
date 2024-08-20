@@ -134,7 +134,7 @@ textarea {
   font-size: 1em;
   transition: background-color 0.3s;
   margin-top: 5%;
-  margin-bottom: 5%;
+  margin-bottom: 15%;
 }
 
 .save-button:hover, .edit-button:hover, .delete-button:hover {

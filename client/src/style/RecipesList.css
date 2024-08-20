@@ -1,0 +1,41 @@
+/* RecipesList.css */
+.dish-list {
+    padding: 20px;
+    border-radius: 10px;
+    text-align: right;
+  }
+  
+  .dish-list h2 {
+    margin-bottom: 20px;
+    color: #34672d;
+  }
+  
+  .dish-list ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .dish-list li {
+    padding: 12px 8px;
+    border: 1px solid #34672d;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    background-color: #ccd5ca46;
+    color: #34672d;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .dish-list li:hover {
+    background-color: #ffffff;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .message-container {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 18px;
+    color: #34672d;
+    font-weight: bold;
+  }
+  

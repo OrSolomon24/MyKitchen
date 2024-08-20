@@ -1,6 +1,9 @@
+// AddRecipe.js
 import React, { useState, useEffect } from 'react';
 import '../style/AddRecipe.css';
 
+const apiUrl = process.env.REACT_APP_API_URL;
+  
 export const AddRecipe = () => {
   const [formType, setFormType] = useState('');
   const [categories, setCategories] = useState([]);
@@ -10,14 +13,15 @@ export const AddRecipe = () => {
   const [ingredients, setIngredients] = useState('');
   const [instruction, setInstruction] = useState('');
   const [recipeLink, setRecipeLink] = useState('');
+  
+
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/food/category');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
+        // Use the environment variable for the API URL
+        const response = await fetch(`${apiUrl}/api/food/category`);
+        if (!response.ok) throw new Error('Error fetching categories');
         const categoryData = await response.json();
         setCategories(categoryData);
       } catch (error) {
@@ -26,29 +30,24 @@ export const AddRecipe = () => {
     };
 
     fetchCategories();
-  }, []);
+  }, [apiUrl]); // Add apiUrl as a dependency in case it changes
 
-  const handleFormSelection = (type) => {
-    setFormType(type);
-  };
+  const handleFormSelection = (type) => setFormType(type);
 
   const handleCategoryChange = (event) => {
     const { value, checked } = event.target;
-    setSelectedCategories((prev) =>
+    setSelectedCategories((prev) => 
       checked ? [...prev, value] : prev.filter((id) => id !== value)
     );
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    // Ensure that all fields are filled out
     if (!recipeName || !recipeDescription || (!ingredients && !recipeLink) || selectedCategories.length === 0) {
       alert('Please fill out all fields and select at least one category.');
       return;
     }
 
-    // Prepare the data to be sent to the server
     const recipeData = {
       name: recipeName,
       description: recipeDescription,
@@ -58,27 +57,19 @@ export const AddRecipe = () => {
     };
 
     try {
-      // Send a POST request for each selected category
       await Promise.all(selectedCategories.map(async (categoryId) => {
-        const response = await fetch('http://localhost:5000/api/food/dish', {
+        await fetch(`${apiUrl}/api/food/dish`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...recipeData,
             categoryid: parseInt(categoryId, 10),
-            dishid: Math.floor(Math.random() * 1000) + 1 // Generate a random dish ID
+            dishid: Math.floor(Math.random() * 1000) + 1 // Random dish ID
           }),
         });
-
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
       }));
 
       alert('Recipe added successfully!');
-      // Reset form fields
       setFormType('');
       setRecipeName('');
       setRecipeDescription('');

@@ -1,8 +1,8 @@
 // NavBar.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../assets/logo.png';
-import '../style/NavBar.css';
+import logo from '../../assets/logo.png';
+import '../../style/NavBar.css';
 
 export const NavBar = () => {
   return (
@@ -14,8 +14,8 @@ export const NavBar = () => {
         <Link to="/foodCategories">מתכונים</Link>
         <Link to="/addRecipe">הוסף מתכון</Link>
         <Link to="/signin">התחבר</Link>
-
       </nav>
     </div>
   );
-}
+};
+

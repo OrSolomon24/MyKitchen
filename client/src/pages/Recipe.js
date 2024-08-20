@@ -1,11 +1,14 @@
+// Recipe.js
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import '../style/Recipe.css';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
+import '../style/Recipe.css';
+
+const apiUrl = process.env.REACT_APP_API_URL;
 
 export const Recipe = () => {
   const { state } = useLocation();
-  const navigate = useNavigate(); // Add useNavigate to redirect after deletion
+  const navigate = useNavigate();
   const [dish, setDish] = useState(state?.dish || { ingredients: [] });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -13,8 +16,7 @@ export const Recipe = () => {
 
   const handleSave = async () => {
     try {
-      console.log('Saving dish:', dish); // Debugging line
-      const response = await fetch(`http://localhost:5000/api/food/dish/${dish._id}`, {
+      const response = await fetch(`${apiUrl}/api/food/dish/${dish._id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dish),
@@ -28,34 +30,20 @@ export const Recipe = () => {
   };
 
   const handleChange = (field, value) => {
-    console.log(`Updating ${field} with value:`, value); // Debugging line
-    setDish(prev => ({ 
-      ...prev, 
-      [field]: field === 'ingredients' ? value.split('\n') : value 
+    setDish((prev) => ({
+      ...prev,
+      [field]: field === 'ingredients' ? value.split('\n') : value,
     }));
   };
 
   const handleDelete = async () => {
     const confirmDelete = window.confirm('Are you sure you want to delete this recipe?');
-
-    if (!confirmDelete) {
-      return; // Abort deletion if the user cancels
-    }
+    if (!confirmDelete) return;
 
     try {
-      console.log('Deleting dish:', dish._id); // Debugging line
-      const response = await fetch(`http://localhost:5000/api/food/dish/${dish._id}`, {
-        method: 'DELETE',
-      });
-
-      console.log('Response status:', response.status); // Debugging line
-
-      if (!response.ok) throw new Error(`Failed to delete dish. Status: ${response.status}`);
-
-      const result = await response.json();
-      console.log('Delete result:', result); // Debugging line
-
-      navigate('/'); // Redirect to home or list of dishes after deletion
+      const response = await fetch(`${apiUrl}/api/food/dish/${dish._id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete dish');
+      navigate('/');
     } catch (error) {
       console.error('Error deleting dish:', error);
     }
@@ -88,7 +76,6 @@ export const Recipe = () => {
       )}
     </section>
   );
-  
 
   return (
     <div className="recipe-container" dir="rtl">
@@ -113,21 +100,18 @@ export const Recipe = () => {
         <div className="recipe-details">
           {renderField('תיאור', 'description', 'textarea')}
           {renderField('מרכיבים', 'ingredients', 'textarea')}
-          {renderField('הוראות הכנה', 'instruction', 'textarea')} {/* Ensure field name is correct */}
+          {renderField('הוראות הכנה', 'instruction', 'textarea')}
         </div>
       )}
 
       <div className="buttons-container">
-        <button 
-          onClick={() => isEditing ? handleSave() : setIsEditing(true)} 
-          className={isEditing ? "save-button" : "edit-button"}
+        <button
+          onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+          className={isEditing ? 'save-button' : 'edit-button'}
         >
           {isEditing ? 'שמור שינויים' : <><FaPencilAlt /> ערוך מתכון</>}
         </button>
-        <button 
-          onClick={handleDelete}
-          className="delete-button"
-        >
+        <button onClick={handleDelete} className="delete-button">
           <FaTrash /> מחק מתכון
         </button>
       </div>

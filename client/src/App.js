@@ -1,12 +1,13 @@
+// App.js
 import './App.css';
-import { Home } from './pages/Home.js';
-import { NavBar } from './components/NavBar.js';
-import { Footer } from './components/Footer.js';
-import { SignIn } from './pages/SignIn.js';
-import { FoodCategories } from './pages/FoodCategories.js';
+import { Home } from './pages/Home';
+import { NavBar } from './components/common/NavBar';
+import { Footer } from './components/common/Footer';
+import { SignIn } from './pages/SignIn';
+import { FoodCategories } from './pages/FoodCategories';
 import { Recipe } from './pages/Recipe';
 import { AddRecipe } from './pages/AddRecipe';
-import { BrowserRouter as Router, Switch, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
