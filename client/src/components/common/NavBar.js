@@ -1,10 +1,12 @@
-// NavBar.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../assets/logo.png';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth hook
 import '../../style/NavBar.css';
 
 export const NavBar = () => {
+  const { isAuthenticated } = useAuth(); // Get authentication status
+
   return (
     <div className="navbar">
       <Link to="/">
@@ -13,9 +15,8 @@ export const NavBar = () => {
       <nav>
         <Link to="/foodCategories">מתכונים</Link>
         <Link to="/addRecipe">הוסף מתכון</Link>
-        <Link to="/signin">התחבר</Link>
+        {!isAuthenticated && <Link to="/signin">התחבר</Link>} {/* Conditionally render the sign-in link */}
       </nav>
     </div>
   );
 };
-

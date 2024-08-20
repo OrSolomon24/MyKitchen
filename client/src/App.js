@@ -1,4 +1,3 @@
-// App.js
 import './App.css';
 import { Home } from './pages/Home';
 import { NavBar } from './components/common/NavBar';
@@ -8,22 +7,24 @@ import { FoodCategories } from './pages/FoodCategories';
 import { Recipe } from './pages/Recipe';
 import { AddRecipe } from './pages/AddRecipe';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <div className="App">
+    <AuthProvider>
       <Router>
-        <NavBar pageName="Home" />
+        <NavBar />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/foodCategories" element={<FoodCategories />} />
-          <Route path="/recipe/:dishid" element={<Recipe />} />
           <Route path="/signin" element={<SignIn />} />
-          <Route path="/addRecipe" element={<AddRecipe />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/foodCategories" element={<ProtectedRoute><FoodCategories /></ProtectedRoute>} />
+          <Route path="/recipe/:dishid" element={<ProtectedRoute><Recipe /></ProtectedRoute>} />
+          <Route path="/addRecipe" element={<ProtectedRoute><AddRecipe /></ProtectedRoute>} />
         </Routes>
         <Footer />
       </Router>
-    </div>
+    </AuthProvider>
   );
 }
 
