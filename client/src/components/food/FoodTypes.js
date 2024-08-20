@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AddCategory from './AddCategory';
+import DeleteCategory from './DeleteCategory'; // Import the new component
 import '../../style/FoodTypes.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -8,24 +9,22 @@ const FoodTypes = ({ categories, onCategoryClick, selectedCategory, refreshCateg
   const [isDeleteMode, setIsDeleteMode] = useState(false);
 
   const handleDeleteCategory = async (categoryId) => {
-    console.log('Deleting category with ID:', categoryId); // Debugging
     const confirmDelete = window.confirm('Are you sure you want to delete this category?');
     if (!confirmDelete) return;
-  
+
     try {
       const response = await fetch(`${apiUrl}/api/food/category/${categoryId}`, {
         method: 'DELETE',
       });
-  
+
       if (!response.ok) throw new Error('Error deleting category');
+      setIsDeleteMode(false); // Turn off delete mode
       refreshCategories(); // Refresh the categories after deletion
     } catch (error) {
       console.error('Failed to delete category:', error);
       alert('Error deleting category.');
     }
   };
-  
-  
 
   const toggleDeleteMode = () => {
     setIsDeleteMode((prev) => !prev); // Toggle delete mode on and off
@@ -56,9 +55,10 @@ const FoodTypes = ({ categories, onCategoryClick, selectedCategory, refreshCateg
         )}
       </ul>
       <AddCategory refreshCategories={refreshCategories} />
-      <button onClick={toggleDeleteMode} className={`delete-category-button ${isDeleteMode ? 'active' : ''}`}>
-        {isDeleteMode ? 'בטל מחיקה' : 'מחק קטגוריה'}
-      </button>
+      <DeleteCategory
+        isDeleteMode={isDeleteMode}
+        toggleDeleteMode={toggleDeleteMode}
+      />
     </div>
   );
 };
