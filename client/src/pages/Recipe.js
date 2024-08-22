@@ -1,5 +1,4 @@
-// Recipe.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import '../style/Recipe.css';
@@ -11,8 +10,34 @@ export const Recipe = () => {
   const navigate = useNavigate();
   const [dish, setDish] = useState(state?.dish || { ingredients: [] });
   const [isEditing, setIsEditing] = useState(false);
+  const [useProxy, setUseProxy] = useState(false);
 
   if (!dish._id) return <p dir="rtl">לא נבחר מתכון.</p>;
+
+  useEffect(() => {
+    const checkIfProxyIsNeeded = async () => {
+      try {
+        const response = await fetch(dish.url, {
+          method: 'HEAD',
+        });
+        
+        // Check if the headers indicate X-Frame-Options or Content-Security-Policy
+        const xFrameOptions = response.headers.get('x-frame-options');
+        const contentSecurityPolicy = response.headers.get('content-security-policy');
+
+        if (xFrameOptions || contentSecurityPolicy) {
+          setUseProxy(true);
+        }
+      } catch (error) {
+        console.error('Error checking if proxy is needed:', error);
+        setUseProxy(true); // Assume proxy is needed if the fetch fails
+      }
+    };
+
+    if (dish.url) {
+      checkIfProxyIsNeeded();
+    }
+  }, [dish.url]);
 
   const handleSave = async () => {
     try {
@@ -94,7 +119,11 @@ export const Recipe = () => {
       {dish.url ? (
         <div className="iframe-container">
           {renderField('תיאור', 'description', 'textarea')}
-          <iframe src={dish.url} title={dish.name} allowFullScreen />
+          <iframe
+            src={useProxy ? `http://localhost:5000/proxy?url=${encodeURIComponent(dish.url)}` : dish.url}
+            title={dish.name}
+            allowFullScreen
+          />
         </div>
       ) : (
         <div className="recipe-details">
