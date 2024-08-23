@@ -12,15 +12,15 @@ export const Recipe = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [useProxy, setUseProxy] = useState(false);
 
-  if (!dish._id) return <p dir="rtl">לא נבחר מתכון.</p>;
-
   useEffect(() => {
     const checkIfProxyIsNeeded = async () => {
+      if (!dish.url) return;
+
       try {
         const response = await fetch(dish.url, {
           method: 'HEAD',
         });
-        
+
         // Check if the headers indicate X-Frame-Options or Content-Security-Policy
         const xFrameOptions = response.headers.get('x-frame-options');
         const contentSecurityPolicy = response.headers.get('content-security-policy');
@@ -104,46 +104,52 @@ export const Recipe = () => {
 
   return (
     <div className="recipe-container" dir="rtl">
-      <h1 className="recipe-title">
-        {isEditing ? (
-          <input
-            value={dish.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-            className="dish-name"
-          />
-        ) : (
-          <span className="dish-name">{dish.name}</span>
-        )}
-      </h1>
-
-      {dish.url ? (
-        <div className="iframe-container">
-          {renderField('תיאור', 'description', 'textarea')}
-          <iframe
-            src={useProxy ? `http://localhost:5000/proxy?url=${encodeURIComponent(dish.url)}` : dish.url}
-            title={dish.name}
-            allowFullScreen
-          />
-        </div>
+      {!dish._id ? (
+        <p>לא נבחר מתכון.</p>
       ) : (
-        <div className="recipe-details">
-          {renderField('תיאור', 'description', 'textarea')}
-          {renderField('מרכיבים', 'ingredients', 'textarea')}
-          {renderField('הוראות הכנה', 'instruction', 'textarea')}
-        </div>
-      )}
+        <>
+          <h1 className="recipe-title">
+            {isEditing ? (
+              <input
+                value={dish.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                className="dish-name"
+              />
+            ) : (
+              <span className="dish-name">{dish.name}</span>
+            )}
+          </h1>
 
-      <div className="buttons-container">
-        <button
-          onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-          className={isEditing ? 'save-button' : 'edit-button'}
-        >
-          {isEditing ? 'שמור שינויים' : <><FaPencilAlt /> ערוך מתכון</>}
-        </button>
-        <button onClick={handleDelete} className="delete-button">
-          <FaTrash /> מחק מתכון
-        </button>
-      </div>
+          {dish.url ? (
+            <div className="iframe-container">
+              {renderField('תיאור', 'description', 'textarea')}
+              <iframe
+                src={useProxy ? `http://localhost:5000/proxy?url=${encodeURIComponent(dish.url)}` : dish.url}
+                title={dish.name}
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="recipe-details">
+              {renderField('תיאור', 'description', 'textarea')}
+              {renderField('מרכיבים', 'ingredients', 'textarea')}
+              {renderField('הוראות הכנה', 'instruction', 'textarea')}
+            </div>
+          )}
+
+          <div className="buttons-container">
+            <button
+              onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+              className={isEditing ? 'save-button' : 'edit-button'}
+            >
+              {isEditing ? 'שמור שינויים' : <><FaPencilAlt /> ערוך מתכון</>}
+            </button>
+            <button onClick={handleDelete} className="delete-button">
+              <FaTrash /> מחק מתכון
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
