@@ -1,3 +1,5 @@
+# Dockerfile for client
+
 # Use a Node.js base image
 FROM node:18-alpine
 
@@ -13,8 +15,14 @@ RUN npm install
 # Copy the remaining application files
 COPY . .
 
-# Expose the frontend port (usually React apps run on port 3000)
-EXPOSE 3000
+# Build the React app for production
+RUN npm run build
 
-# Start the frontend server
-CMD ["npm", "start"]
+# Install a lightweight web server like serve
+RUN npm install -g serve
+
+# Expose the port
+EXPOSE 5000
+
+# Serve the built app
+CMD ["serve", "-s", "build", "-l", "5000"]
