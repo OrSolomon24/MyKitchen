@@ -124,7 +124,7 @@ export const Recipe = () => {
             <div className="iframe-container">
               {renderField('תיאור', 'description', 'textarea')}
               <iframe
-                src={useProxy ? `http://localhost:5000/proxy?url=${encodeURIComponent(dish.url)}` : dish.url}
+                src={useProxy ? `${apiUrl}/proxy?url=${encodeURIComponent(dish.url)}` : dish.url}
                 title={dish.name}
                 allowFullScreen
               />
