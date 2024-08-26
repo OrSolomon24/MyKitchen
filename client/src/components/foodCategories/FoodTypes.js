@@ -1,9 +1,10 @@
+// components/foodCategories/FoodTypes.js
 import React, { useState } from 'react';
 import AddCategory from './AddCategory';
-import DeleteCategory from './DeleteCategory'; // Import the new component
-import '../../style/FoodTypes.css';
+import DeleteCategory from './DeleteCategory';
+import { deleteCategory } from '../../utils/foodCategoriesUtils';
 
-const apiUrl = process.env.REACT_APP_API_URL;
+import '../../style/FoodTypes.css';
 
 const FoodTypes = ({ categories, onCategoryClick, selectedCategory, refreshCategories }) => {
   const [isDeleteMode, setIsDeleteMode] = useState(false);
@@ -13,21 +14,16 @@ const FoodTypes = ({ categories, onCategoryClick, selectedCategory, refreshCateg
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(`${apiUrl}/api/food/category/${categoryId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) throw new Error('Error deleting category');
-      setIsDeleteMode(false); // Turn off delete mode
-      refreshCategories(); // Refresh the categories after deletion
+      await deleteCategory(categoryId);
+      setIsDeleteMode(false);
+      refreshCategories();
     } catch (error) {
-      console.error('Failed to delete category:', error);
       alert('Error deleting category.');
     }
   };
 
   const toggleDeleteMode = () => {
-    setIsDeleteMode((prev) => !prev); // Toggle delete mode on and off
+    setIsDeleteMode((prev) => !prev);
   };
 
   return (
@@ -40,9 +36,9 @@ const FoodTypes = ({ categories, onCategoryClick, selectedCategory, refreshCateg
               key={category.id}
               onClick={() => {
                 if (isDeleteMode) {
-                  handleDeleteCategory(category.id); // Delete category if in delete mode
+                  handleDeleteCategory(category.id);
                 } else {
-                  onCategoryClick(category.id, category.name); // Otherwise, select category
+                  onCategoryClick(category.id, category.name);
                 }
               }}
               className={selectedCategory === category.id ? 'selected' : ''}
