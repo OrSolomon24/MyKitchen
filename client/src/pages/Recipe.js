@@ -99,6 +99,19 @@ export const Recipe = () => {
       ) : (
         <p>{dish[field] || ''}</p>
       )}
+
+      {/* Add the hyperlink inside the description container */}
+      {field === 'description' && dish.url && (
+        <a
+          href={dish.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="recipe-link"
+        >
+          <br/>
+          לחצי כאן לצפייה באתר המקורי
+        </a>
+      )}
     </section>
   );
 
