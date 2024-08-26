@@ -100,7 +100,7 @@
 }
 
 /* General styling for inputs and textareas */
-input[type="text"], textarea {
+input[type="text"], input[type="password"], textarea {
   width: 100%;
   padding: 10px;
   border-radius: 10px;
@@ -111,11 +111,12 @@ input[type="text"], textarea {
   transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition */
 }
 
-input[type="text"]:focus, textarea:focus {
+input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
   border-color: #34672d;
   box-shadow: 0 0 5px rgba(52, 103, 45, 0.2);
   outline: none; /* Remove default outline */
 }
+
 
 textarea {
   min-height: 100px; /* Makes textareas taller */

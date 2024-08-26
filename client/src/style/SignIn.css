@@ -30,16 +30,8 @@
   color: #34672d; /* White text to match recipe style */
 }
 
-.form-group input {
-  width: 100%;
-  padding: 1rem;
-  border: 1px solid #ffffff46; /* Match recipe section border */
-  border-radius: 8px;
-  font-size: 1rem;
-  box-sizing: border-box;
-  color: #34672d; /* White text inside input fields */
-  background-color: transparent; /* Transparent background */
-}
+
+
 
 .form-group input:focus {
   outline: none;
