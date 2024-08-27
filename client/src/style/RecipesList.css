@@ -1,8 +1,8 @@
 /* RecipesList.css */
 .dish-list {
-    padding: 20px;
     border-radius: 10px;
     text-align: right;
+    margin: -5px;
   }
   
   .dish-list h2 {
@@ -12,7 +12,6 @@
   
   .dish-list ul {
     list-style: none;
-    padding: 0;
   }
   
   .dish-list li {

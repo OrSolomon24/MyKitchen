@@ -58,3 +58,19 @@
     font-weight: bold;
   }
   
+  .sidebar {
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .search-bar {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    
+  }
+  
+  .recipes-list-container {
+    flex: 1;
+  }
+  
