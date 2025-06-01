@@ -1,10 +1,15 @@
 // utils/recipeUtils.js
 
 const apiUrl = process.env.REACT_APP_API_URL;
+import { getAuthHeader } from './authHeader';
 
 export const fetchCategories = async () => {
   try {
-    const response = await fetch(`${apiUrl}/api/food/category`);
+    const response = await fetch(`${apiUrl}/api/food/category`, {
+      headers: {
+        ...getAuthHeader(),
+      },
+    });
     if (!response.ok) throw new Error('Error fetching categories');
     return await response.json();
   } catch (error) {
@@ -19,11 +24,14 @@ export const addRecipe = async (recipeData, selectedCategories) => {
       selectedCategories.map(async (categoryId) => {
         await fetch(`${apiUrl}/api/food/dish`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+          },
           body: JSON.stringify({
             ...recipeData,
             categoryid: parseInt(categoryId, 10),
-            dishid: Math.floor(Math.random() * 1000) + 1, // Random dish ID
+            dishid: Math.floor(Math.random() * 1000) + 1,
           }),
         });
       })

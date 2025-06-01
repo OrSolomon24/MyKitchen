@@ -1,10 +1,14 @@
 // utils/foodCategoriesUtils.js
-
 const apiUrl = process.env.REACT_APP_API_URL;
+import { getAuthHeader } from './authHeader';
 
 export const fetchCategories = async () => {
   try {
-    const response = await fetch(`${apiUrl}/api/food/category`);
+    const response = await fetch(`${apiUrl}/api/food/category`, {
+      headers: {
+        ...getAuthHeader(),
+      },
+    });
     if (!response.ok) throw new Error('Error fetching categories');
     return await response.json();
   } catch (error) {
@@ -15,7 +19,11 @@ export const fetchCategories = async () => {
 
 export const fetchDishes = async () => {
   try {
-    const response = await fetch(`${apiUrl}/api/food/dish`);
+    const response = await fetch(`${apiUrl}/api/food/dish`, {
+      headers: {
+        ...getAuthHeader(),
+      },
+    });
     if (!response.ok) throw new Error('Error fetching dishes');
     return await response.json();
   } catch (error) {
@@ -26,7 +34,11 @@ export const fetchDishes = async () => {
 
 export const refreshCategories = async () => {
   try {
-    const response = await fetch(`${apiUrl}/api/food/category`);
+    const response = await fetch(`${apiUrl}/api/food/category`, {
+      headers: {
+        ...getAuthHeader(),
+      },
+    });
     if (!response.ok) throw new Error('Error refreshing categories');
     return await response.json();
   } catch (error) {
@@ -36,30 +48,36 @@ export const refreshCategories = async () => {
 };
 
 export const addCategory = async (newCategoryId, newCategoryName) => {
-    try {
-      const response = await fetch(`${apiUrl}/api/food/category`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: newCategoryId, name: newCategoryName }),
-      });
-  
-      if (!response.ok) throw new Error('Error adding category');
-      return response.json();
-    } catch (error) {
-      console.error('Failed to add category:', error);
-      throw error;
-    }
-  };
+  try {
+    const response = await fetch(`${apiUrl}/api/food/category`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify({ id: newCategoryId, name: newCategoryName }),
+    });
 
-  export const deleteCategory = async (categoryId) => {
-    try {
-      const response = await fetch(`${apiUrl}/api/food/category/${categoryId}`, {
-        method: 'DELETE',
-      });
-  
-      if (!response.ok) throw new Error('Error deleting category');
-    } catch (error) {
-      console.error('Failed to delete category:', error);
-      throw error;
-    }
-  };
+    if (!response.ok) throw new Error('Error adding category');
+    return response.json();
+  } catch (error) {
+    console.error('Failed to add category:', error);
+    throw error;
+  }
+};
+
+export const deleteCategory = async (categoryId) => {
+  try {
+    const response = await fetch(`${apiUrl}/api/food/category/${categoryId}`, {
+      method: 'DELETE',
+      headers: {
+        ...getAuthHeader(),
+      },
+    });
+
+    if (!response.ok) throw new Error('Error deleting category');
+  } catch (error) {
+    console.error('Failed to delete category:', error);
+    throw error;
+  }
+};

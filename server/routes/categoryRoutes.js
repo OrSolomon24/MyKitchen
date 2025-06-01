@@ -1,54 +1,48 @@
 const express = require('express');
 const router = express.Router();
 const Category = require('../models/Category');
-const Dish = require('../models/Dish'); // Import the Dish model
+const Dish = require('../models/Dish');
+const { getCache, setCache, clearCache } = require('../utils/cache');
+const authMiddleware = require('../middleware/authMiddleware');
+const ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
 
-// Route to get food categories and dishes
-router.get('/category', async (req, res) => {
+router.get('/category',authMiddleware, async (req, res) => {
+  const cached = getCache('categories');
+  if (cached) return res.json(cached);
+
   try {
-    console.log('Fetching categories...');
     const foodCategories = await Category.find();
-    console.log('Categories:', foodCategories);
+    setCache('categories', foodCategories, ONE_WEEK);
     res.json(foodCategories);
   } catch (error) {
-    console.error('Error fetching categories:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-
-router.post('/category', async (req, res) => {
-  const category = new Category(req.body);
+router.post('/category',authMiddleware, async (req, res) => {
   try {
+    const category = new Category(req.body);
     const newCategory = await category.save();
+    clearCache('categories');
     res.status(201).json(newCategory);
   } catch (error) {
     res.status(400).json({ error: 'An error occurred while creating the category' });
   }
 });
 
-// server/routes/categoryRoutes.js
-router.delete('/category/:id', async (req, res) => {
+router.delete('/category/:id',authMiddleware, async (req, res) => {
   try {
     const categoryId = parseInt(req.params.id, 10);
-
-    // First, delete the category
     const deletedCategory = await Category.findOneAndDelete({ id: categoryId });
-    if (!deletedCategory) {
-      return res.status(404).json({ message: 'Category not found' });
-    }
+    if (!deletedCategory) return res.status(404).json({ message: 'Category not found' });
 
-    // Then, delete all dishes associated with the deleted category
     await Dish.deleteMany({ categoryid: categoryId });
-
+    clearCache('categories');
+    clearCache('dishes');
     res.json({ message: 'Category and associated dishes deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-
-
-
-
 
 module.exports = router;

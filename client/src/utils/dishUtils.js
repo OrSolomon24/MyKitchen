@@ -1,10 +1,15 @@
 // utils/dishUtils.js
 
 const apiUrl = process.env.REACT_APP_API_URL;
+import { getAuthHeader } from './authHeader';
 
 export const fetchDishById = async (id) => {
   try {
-    const response = await fetch(`${apiUrl}/api/food/dish/${id}`);
+    const response = await fetch(`${apiUrl}/api/food/dish/${id}`, {
+      headers: {
+        ...getAuthHeader(),
+      },
+    });
     if (!response.ok) throw new Error('Failed to fetch dish');
     return await response.json();
   } catch (error) {
@@ -17,7 +22,10 @@ export const updateDish = async (dish) => {
   try {
     const response = await fetch(`${apiUrl}/api/food/dish/${dish._id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
       body: JSON.stringify(dish),
     });
     if (!response.ok) throw new Error('Failed to update dish');
@@ -30,7 +38,12 @@ export const updateDish = async (dish) => {
 
 export const deleteDish = async (id) => {
   try {
-    const response = await fetch(`${apiUrl}/api/food/dish/${id}`, { method: 'DELETE' });
+    const response = await fetch(`${apiUrl}/api/food/dish/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...getAuthHeader(),
+      },
+    });
     if (!response.ok) throw new Error('Failed to delete dish');
     return true;
   } catch (error) {
