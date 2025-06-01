@@ -1,13 +1,33 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('auth') === 'true';
+  });
 
-  const login = () => setIsAuthenticated(true);
-  const logout = () => setIsAuthenticated(false);
+  useEffect(() => {
+    // Optional: auto-expiry logic (in case you want to enforce 2 weeks TTL manually)
+    const expiry = localStorage.getItem('auth_expiry');
+    if (expiry && Date.now() > Number(expiry)) {
+      localStorage.removeItem('auth');
+      localStorage.removeItem('auth_expiry');
+      setIsAuthenticated(false);
+    }
+  }, []);
+
+  const login = () => {
+    setIsAuthenticated(true);
+    localStorage.setItem('auth', 'true');
+    localStorage.setItem('auth_expiry', Date.now() + 1000 * 60 * 60 * 24 * 14); // 2 weeks
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('auth');
+    localStorage.removeItem('auth_expiry');
+  };
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
@@ -16,5 +36,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the AuthContext
 export const useAuth = () => useContext(AuthContext);
