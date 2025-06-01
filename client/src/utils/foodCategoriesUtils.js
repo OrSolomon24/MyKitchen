@@ -1,6 +1,6 @@
 // utils/foodCategoriesUtils.js
-const apiUrl = process.env.REACT_APP_API_URL;
 import { getAuthHeader } from './authHeader';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 export const fetchCategories = async () => {
   try {

@@ -1,7 +1,7 @@
 // utils/dishUtils.js
 
-const apiUrl = process.env.REACT_APP_API_URL;
 import { getAuthHeader } from './authHeader';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 export const fetchDishById = async (id) => {
   try {
