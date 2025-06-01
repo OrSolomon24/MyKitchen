@@ -1,5 +1,3 @@
-
-// 📁 server/index.js (or wherever your Express app is defined)
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -12,7 +10,24 @@ const proxyRoutes = require('./routes/proxyRoutes');
 const app = express();
 connectDB();
 
-app.use(cors());
+// ✅ הגדרת CORS עם דומיינים מותרים
+const allowedOrigins = [
+  'https://my-kitchen-two.vercel.app', // פרונט בפרודקשן
+  'http://localhost:3000'              // פיתוח מקומי
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // תן גישה גם כש-origin ריק (למשל curl או Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
 
 app.use('/api/food', category);
