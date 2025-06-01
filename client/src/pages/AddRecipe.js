@@ -1,10 +1,11 @@
-// pages/AddRecipe.js
 import React, { useState, useEffect } from 'react';
 import { FormSelection } from '../components/addRecipe/FormSelection';
 import { ManualRecipeForm } from '../components/addRecipe/ManualRecipeForm';
 import { LinkRecipeForm } from '../components/addRecipe/LinkRecipeForm';
 import { CategorySelection } from '../components/addRecipe/CategorySelection';
 import { fetchCategories, addRecipe } from '../utils/recipeUtils';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../style/AddRecipe.css';
 
 export const AddRecipe = () => {
@@ -19,8 +20,12 @@ export const AddRecipe = () => {
 
   useEffect(() => {
     const loadCategories = async () => {
-      const categoryData = await fetchCategories();
-      setCategories(categoryData);
+      try {
+        const categoryData = await fetchCategories();
+        setCategories(categoryData);
+      } catch (error) {
+        toast.error('שגיאה בטעינת הקטגוריות');
+      }
     };
     loadCategories();
   }, []);
@@ -32,15 +37,12 @@ export const AddRecipe = () => {
     setSelectedCategories((prev) =>
       checked ? [...prev, value] : prev.filter((id) => id !== value)
     );
-    console.log("Selected Categories:", selectedCategories);
   };
-  
-  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!recipeName || !recipeDescription || (!ingredients && !recipeLink) || selectedCategories.length === 0) {
-      alert('Please fill out all fields and select at least one category.');
+      toast.error('נא למלא את כל השדות ולבחור קטגוריה אחת לפחות');
       return;
     }
 
@@ -54,10 +56,10 @@ export const AddRecipe = () => {
 
     try {
       await addRecipe(recipeData, selectedCategories);
-      alert('Recipe added successfully!');
+      toast.success('המתכון נוסף בהצלחה!');
       resetForm();
     } catch (error) {
-      alert('Error adding recipe. Please try again.');
+      toast.error('אירעה שגיאה. נסה שוב.');
     }
   };
 
@@ -107,6 +109,7 @@ export const AddRecipe = () => {
           <button type="submit">הוספת מתכון</button>
         </form>
       )}
+      <ToastContainer position="bottom-center" autoClose={3000} />
     </div>
   );
 };

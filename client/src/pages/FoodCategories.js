@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import FoodTypes from '../components/foodCategories/FoodTypes';
 import RecipesList from '../components/foodCategories/RecipesList';
 import { fetchCategories, fetchDishes } from '../utils/foodCategoriesUtils';
+import Loader from '../components/Loader';
 import '../style/FoodCategories.css';
 
 export const FoodCategories = () => {
@@ -12,6 +13,8 @@ export const FoodCategories = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +26,7 @@ export const FoodCategories = () => {
   }, [selectedCategory, searchTerm, dishes]);
 
   const fetchCategoriesAndDishes = async () => {
+    setLoading(true);
     try {
       const categoryData = await fetchCategories();
       setCategories(categoryData);
@@ -31,8 +35,11 @@ export const FoodCategories = () => {
       setDishes(dishData);
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
   };
+
 
   const refreshCategories = async () => {
     try {
@@ -77,6 +84,7 @@ export const FoodCategories = () => {
 
     setFilteredDishes(filtered);
   };
+  if (loading) return <Loader />; // ✅ show loader during initial fetch
 
   return (
     <div className="food-categories-container">
