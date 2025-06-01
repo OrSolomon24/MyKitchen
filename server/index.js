@@ -19,6 +19,4 @@ app.use('/api/food', dish);
 app.use('/login', authRoutes);
 app.use(proxyRoutes);
 
-app.listen(5000, () => {
-  console.log('Server is running on port 5000');
-});
+module.exports = app;
