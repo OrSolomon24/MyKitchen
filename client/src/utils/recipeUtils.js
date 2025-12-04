@@ -41,3 +41,38 @@ export const addRecipe = async (recipeData, selectedCategories) => {
     throw error;
   }
 };
+
+
+export const importRecipeFromLinkWithAI = async ({
+  url,
+  name,
+  description,
+  categoryIds,
+}) => {
+  try {
+    const response = await fetch(`${apiUrl}/api/recipes/ai-import`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(), // same auth as other endpoints
+      },
+      body: JSON.stringify({
+        url,
+        name,
+        description,
+        // convert category IDs from string → number (like addRecipe does)
+        categoryIds: categoryIds.map((id) => parseInt(id, 10)),
+      }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || 'Failed to import recipe from link with AI');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error importing recipe with AI:', error);
+    throw error;
+  }
+};

@@ -5,6 +5,7 @@ export const FormSelection = ({ handleFormSelection }) => (
   <div className="form-selection">
     <p>איך תרצו להוסיף את המתכון?</p>
     <button onClick={() => handleFormSelection('manual')}>כתיבה ידנית</button>
-    <button onClick={() => handleFormSelection('link')}>הוספת קישור</button>
+    <button onClick={() => handleFormSelection('link')}>הוספת קישור (ללא AI)</button>
+    <button onClick={() => handleFormSelection('agent')}>ייבוא אוטומטי מקישור (AI)</button>
   </div>
 );

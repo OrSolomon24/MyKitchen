@@ -1,9 +1,11 @@
+// pages/AddRecipe.js (or wherever this lives)
 import React, { useState, useEffect } from 'react';
 import { FormSelection } from '../components/addRecipe/FormSelection';
 import { ManualRecipeForm } from '../components/addRecipe/ManualRecipeForm';
 import { LinkRecipeForm } from '../components/addRecipe/LinkRecipeForm';
 import { CategorySelection } from '../components/addRecipe/CategorySelection';
-import { fetchCategories, addRecipe } from '../utils/recipeUtils';
+import { LinkToAgentForm } from '../components/addRecipe/LinkToAgentForm';
+import { fetchCategories, addRecipe, importRecipeFromLinkWithAI } from '../utils/recipeUtils';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../style/AddRecipe.css';
@@ -17,6 +19,7 @@ export const AddRecipe = () => {
   const [ingredients, setIngredients] = useState('');
   const [instruction, setInstruction] = useState('');
   const [recipeLink, setRecipeLink] = useState('');
+  const [isAgentLoading, setIsAgentLoading] = useState(false);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -24,13 +27,18 @@ export const AddRecipe = () => {
         const categoryData = await fetchCategories();
         setCategories(categoryData);
       } catch (error) {
+        console.error(error);
         toast.error('שגיאה בטעינת הקטגוריות');
       }
     };
     loadCategories();
   }, []);
 
-  const handleFormSelection = (type) => setFormType(type);
+  const handleFormSelection = (type) => {
+    // Clean previous state when switching
+    resetForm();
+    setFormType(type);
+  };
 
   const handleCategoryChange = (event) => {
     const { value, checked } = event.target;
@@ -39,8 +47,10 @@ export const AddRecipe = () => {
     );
   };
 
+  // Existing submit for manual / simple link
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     if (!recipeName || !recipeDescription || (!ingredients && !recipeLink) || selectedCategories.length === 0) {
       toast.error('נא למלא את כל השדות ולבחור קטגוריה אחת לפחות');
       return;
@@ -59,12 +69,53 @@ export const AddRecipe = () => {
       toast.success('המתכון נוסף בהצלחה!');
       resetForm();
     } catch (error) {
+      console.error(error);
       toast.error('אירעה שגיאה. נסה שוב.');
     }
   };
 
-  const resetForm = () => {
+  // New submit handler for AI-import path
+const handleAgentSubmit = async () => {
+  if (!recipeLink) {
+    toast.error('נא להזין קישור למתכון');
+    return;
+  }
+  if (!recipeName) {
+    toast.error('נא להזין שם למתכון');
+    return;
+  }
+  if (!recipeDescription) {
+    toast.error('נא להזין תיאור למתכון');
+    return;
+  }
+  if (selectedCategories.length === 0) {
+    toast.error('נא לבחור לפחות קטגוריה אחת');
+    return;
+  }
+
+  try {
+    setIsAgentLoading(true);
+
+    await importRecipeFromLinkWithAI({
+      url: recipeLink,
+      name: recipeName,
+      description: recipeDescription,
+      categoryIds: selectedCategories,
+    });
+
+    toast.success('המתכון יובא בהצלחה בעזרת AI!');
+    resetForm();
     setFormType('');
+  } catch (error) {
+    console.error(error);
+    toast.error('אירעה שגיאה בייבוא המתכון. נסה שוב.');
+  } finally {
+    setIsAgentLoading(false);
+  }
+};
+
+
+  const resetForm = () => {
     setRecipeName('');
     setRecipeDescription('');
     setIngredients('');
@@ -76,31 +127,24 @@ export const AddRecipe = () => {
   return (
     <div className="add-recipe-container" dir="rtl">
       <h1>אין כמו מתכון חדש וטעים!</h1>
-      {formType === '' && <FormSelection handleFormSelection={handleFormSelection} />}
-      {(formType === 'manual' || formType === 'link') && (
+
+      {formType === '' && (
+        <FormSelection handleFormSelection={handleFormSelection} />
+      )}
+
+      {/* Manual form (same as before) */}
+      {formType === 'manual' && (
         <form onSubmit={handleSubmit}>
-          {formType === 'manual' && (
-            <ManualRecipeForm
-              recipeName={recipeName}
-              setRecipeName={setRecipeName}
-              recipeDescription={recipeDescription}
-              setRecipeDescription={setRecipeDescription}
-              ingredients={ingredients}
-              setIngredients={setIngredients}
-              instruction={instruction}
-              setInstruction={setInstruction}
-            />
-          )}
-          {formType === 'link' && (
-            <LinkRecipeForm
-              recipeLink={recipeLink}
-              setRecipeLink={setRecipeLink}
-              recipeName={recipeName}
-              setRecipeName={setRecipeName}
-              recipeDescription={recipeDescription}
-              setRecipeDescription={setRecipeDescription}
-            />
-          )}
+          <ManualRecipeForm
+            recipeName={recipeName}
+            setRecipeName={setRecipeName}
+            recipeDescription={recipeDescription}
+            setRecipeDescription={setRecipeDescription}
+            ingredients={ingredients}
+            setIngredients={setIngredients}
+            instruction={instruction}
+            setInstruction={setInstruction}
+          />
           <CategorySelection
             categories={categories}
             handleCategoryChange={handleCategoryChange}
@@ -109,6 +153,45 @@ export const AddRecipe = () => {
           <button type="submit">הוספת מתכון</button>
         </form>
       )}
+
+      {/* Simple link form (same as before) */}
+      {formType === 'link' && (
+        <form onSubmit={handleSubmit}>
+          <LinkRecipeForm
+            recipeLink={recipeLink}
+            setRecipeLink={setRecipeLink}
+            recipeName={recipeName}
+            setRecipeName={setRecipeName}
+            recipeDescription={recipeDescription}
+            setRecipeDescription={setRecipeDescription}
+          />
+          <CategorySelection
+            categories={categories}
+            handleCategoryChange={handleCategoryChange}
+            selectedCategories={selectedCategories}
+          />
+          <button type="submit">הוספת מתכון</button>
+        </form>
+      )}
+
+      {/* New AI-import form */}
+      {formType === 'agent' && (
+        <LinkToAgentForm
+          recipeLink={recipeLink}
+          setRecipeLink={setRecipeLink}
+          recipeName={recipeName}
+          setRecipeName={setRecipeName}
+          recipeDescription={recipeDescription}
+          setRecipeDescription={setRecipeDescription}
+          categories={categories}
+          selectedCategories={selectedCategories}
+          handleCategoryChange={handleCategoryChange}
+          onSubmit={handleAgentSubmit}
+          isLoading={isAgentLoading}
+        />
+      )}
+
+
       <ToastContainer position="bottom-center" autoClose={3000} />
     </div>
   );
