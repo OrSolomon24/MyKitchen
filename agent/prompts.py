@@ -21,7 +21,7 @@ You MUST return a JSON object with this exact structure:
 Rules:
 - "ingredients" is a flat list of strings, one ingredient per item.
 - "instructions" is a flat ordered list of steps.
-- Prefer keeping the original language of the recipe (e.g., Hebrew).
+- You MUST return all ingredients and instructions in Hebrew, even if the original recipe is in another language. Translate them to Hebrew if needed.
 - Do NOT add "name" or "description" fields (the caller already has them).
 - Do NOT include any comments or extra keys.
 - Output MUST be STRICT valid JSON, no extra text before or after.
