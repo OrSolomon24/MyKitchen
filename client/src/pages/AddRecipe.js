@@ -49,30 +49,40 @@ export const AddRecipe = () => {
 
   // Existing submit for manual / simple link
   const handleSubmit = async (event) => {
-    event.preventDefault();
+  event.preventDefault();
 
-    if (!recipeName || !recipeDescription || (!ingredients && !recipeLink) || selectedCategories.length === 0) {
-      toast.error('נא למלא את כל השדות ולבחור קטגוריה אחת לפחות');
-      return;
-    }
+  if (!recipeName || !recipeDescription || (!ingredients && !recipeLink) || selectedCategories.length === 0) {
+    toast.error('נא למלא את כל השדות ולבחור קטגוריה אחת לפחות');
+    return;
+  }
 
-    const recipeData = {
-      name: recipeName,
-      description: recipeDescription,
-      ingredients: ingredients || '',
-      instruction: instruction || '',
-      url: formType === 'link' ? recipeLink : '',
-    };
+  // 🔹 normalize ingredients to array (one item per line)
+  const ingredientsArray =
+    formType === 'manual'
+      ? ingredients
+          .split('\n')
+          .map((line) => line.trim())
+          .filter((line) => line !== '')
+      : [];
 
-    try {
-      await addRecipe(recipeData, selectedCategories);
-      toast.success('המתכון נוסף בהצלחה!');
-      resetForm();
-    } catch (error) {
-      console.error(error);
-      toast.error('אירעה שגיאה. נסה שוב.');
-    }
+  const recipeData = {
+    name: recipeName,
+    description: recipeDescription,
+    ingredients: ingredientsArray,          // 👈 now it's an array
+    instruction: instruction || '',
+    url: formType === 'link' ? recipeLink : '',
   };
+
+  try {
+    await addRecipe(recipeData, selectedCategories);
+    toast.success('המתכון נוסף בהצלחה!');
+    resetForm();
+  } catch (error) {
+    console.error(error);
+    toast.error('אירעה שגיאה. נסה שוב.');
+  }
+};
+
 
   // New submit handler for AI-import path
 const handleAgentSubmit = async () => {

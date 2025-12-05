@@ -30,6 +30,18 @@ router.post('/dish',authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/dish/:id', authMiddleware, async (req, res) => {
+  try {
+    const dish = await Dish.findById(req.params.id);
+    if (!dish) {
+      return res.status(404).json({ message: 'Dish not found' });
+    }
+    res.json(dish);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 router.patch('/dish/:id',authMiddleware, async (req, res) => {
   try {
     const updatedDish = await Dish.findByIdAndUpdate(req.params.id, req.body, { new: true });

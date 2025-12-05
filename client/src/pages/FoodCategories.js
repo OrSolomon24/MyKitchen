@@ -65,9 +65,10 @@ export const FoodCategories = () => {
   };
 
   const handleDishClick = (dishId) => {
-    const selectedDish = dishes.find(dish => dish.dishid === dishId);
+    const selectedDish = dishes.find(dish => dish._id === dishId);
     navigate(`/recipe/${dishId}`, { state: { dish: selectedDish } });
   };
+
 
   const filterDishes = () => {
     let filtered = dishes;
