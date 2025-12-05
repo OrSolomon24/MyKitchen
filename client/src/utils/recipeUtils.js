@@ -31,7 +31,6 @@ export const addRecipe = async (recipeData, selectedCategories) => {
           body: JSON.stringify({
             ...recipeData,
             categoryid: parseInt(categoryId, 10),
-            dishid: Math.floor(Math.random() * 1000) + 1,
           }),
         });
       })
@@ -41,6 +40,7 @@ export const addRecipe = async (recipeData, selectedCategories) => {
     throw error;
   }
 };
+
 
 
 export const importRecipeFromLinkWithAI = async ({

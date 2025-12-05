@@ -1,35 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { RecipeForm } from '../components/recipes/RecipeForm';
 import { RecipeField } from '../components/recipes/RecipeField';
 import { RecipeButtons } from '../components/recipes/RecipeButtons';
-import { updateDish, deleteDish, checkIfProxyIsNeeded } from '../utils/dishUtils';
+import { updateDish, deleteDish, checkIfProxyIsNeeded, fetchDishById } from '../utils/dishUtils';
 import '../style/Recipe.css';
 
 export const Recipe = () => {
   const { state } = useLocation();
+  const { id } = useParams();             // 👈 get id from /recipe/:id
   const navigate = useNavigate();
-  const [dish, setDish] = useState(state?.dish || { ingredients: [] });
+
+  const [dish, setDish] = useState(state?.dish || null);
   const [isEditing, setIsEditing] = useState(false);
   const [useProxy, setUseProxy] = useState(false);
 
+  // Load dish from backend when opening directly by URL / refresh
+  useEffect(() => {
+    const loadDish = async () => {
+      if (!dish && id) {
+        try {
+          const data = await fetchDishById(id);
+          setDish(data);
+        } catch (error) {
+          console.error('Error loading dish:', error);
+        }
+      }
+    };
+
+    loadDish();
+  }, [dish, id]);
+
+  // Check if proxy is needed once we have the dish URL
   useEffect(() => {
     const checkProxy = async () => {
-      if (dish.url) {
+      if (dish?.url) {
         const proxyNeeded = await checkIfProxyIsNeeded(dish.url);
         setUseProxy(proxyNeeded);
       }
     };
 
     checkProxy();
-  }, [dish.url]);
+  }, [dish?.url]);
 
   const handleSave = async () => {
     try {
       const updatedDish = dish.url
         ? { ...dish, ingredients: undefined, instruction: undefined }
         : dish;
-  
+
       const response = await updateDish(updatedDish);
       setDish(response);
       setIsEditing(false);
@@ -37,7 +56,6 @@ export const Recipe = () => {
       console.error('Error updating dish:', error);
     }
   };
-  
 
   const handleChange = (field, value) => {
     setDish((prev) => ({
@@ -58,40 +76,43 @@ export const Recipe = () => {
     }
   };
 
+  if (!dish?._id) {
+    return <p>לא נבחר מתכון.</p>;
+  }
+
   return (
     <div className="recipe-container" dir="rtl">
-      {!dish._id ? (
-        <p>לא נבחר מתכון.</p>
-      ) : (
-        <>
-          {isEditing ? (
-            <div className="edit-view">
-              <RecipeForm dish={dish} handleChange={handleChange} />
-            </div>
-          ) : dish.url ? (
-            <div className="iframe-container">
-              <RecipeField label={dish.name} field="description" dish={dish} />
-              <iframe
-                src={useProxy ? `${process.env.REACT_APP_API_URL}/proxy?url=${encodeURIComponent(dish.url)}` : dish.url}
-                title={dish.name}
-                allowFullScreen
-              />
-            </div>
-          ) : (
-            <div className="recipe-details">
-              <RecipeField label={dish.name} field="description" dish={dish} />
-              <RecipeField label="מרכיבים" field="ingredients" dish={dish} />
-              <RecipeField label="הוראות הכנה" field="instruction" dish={dish} />
-            </div>
-          )}
-          <RecipeButtons
-            isEditing={isEditing}
-            handleSave={handleSave}
-            setIsEditing={setIsEditing}
-            handleDelete={handleDelete}
+      {isEditing ? (
+        <div className="edit-view">
+          <RecipeForm dish={dish} handleChange={handleChange} />
+        </div>
+      ) : dish.url ? (
+        <div className="iframe-container">
+          <RecipeField label={dish.name} field="description" dish={dish} />
+          <iframe
+            src={
+              useProxy
+                ? `${process.env.REACT_APP_API_URL}/proxy?url=${encodeURIComponent(dish.url)}`
+                : dish.url
+            }
+            title={dish.name}
+            allowFullScreen
           />
-        </>
+        </div>
+      ) : (
+        <div className="recipe-details">
+          <RecipeField label={dish.name} field="description" dish={dish} />
+          <RecipeField label="מרכיבים" field="ingredients" dish={dish} />
+          <RecipeField label="הוראות הכנה" field="instruction" dish={dish} />
+        </div>
       )}
+
+      <RecipeButtons
+        isEditing={isEditing}
+        handleSave={handleSave}
+        setIsEditing={setIsEditing}
+        handleDelete={handleDelete}
+      />
     </div>
   );
 };
