@@ -1,5 +1,4 @@
 # prompts.py
-# prompts.py
 
 def build_recipe_extraction_prompt(html: str, user_name: str, user_description: str) -> str:
     """
