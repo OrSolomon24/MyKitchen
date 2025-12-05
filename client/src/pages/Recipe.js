@@ -1,21 +1,28 @@
+// pages/Recipe.js
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { RecipeForm } from '../components/recipes/RecipeForm';
 import { RecipeField } from '../components/recipes/RecipeField';
 import { RecipeButtons } from '../components/recipes/RecipeButtons';
-import { updateDish, deleteDish, checkIfProxyIsNeeded, fetchDishById } from '../utils/dishUtils';
+import {
+  updateDish,
+  deleteDish,
+  checkIfProxyIsNeeded,
+  fetchDishById,
+  uploadDishImage,
+  deleteDishImage,
+} from '../utils/dishUtils';
 import '../style/Recipe.css';
 
 export const Recipe = () => {
   const { state } = useLocation();
-  const { id } = useParams();             // 👈 get id from /recipe/:id
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [dish, setDish] = useState(state?.dish || null);
   const [isEditing, setIsEditing] = useState(false);
   const [useProxy, setUseProxy] = useState(false);
 
-  // Load dish from backend when opening directly by URL / refresh
   useEffect(() => {
     const loadDish = async () => {
       if (!dish && id) {
@@ -31,7 +38,6 @@ export const Recipe = () => {
     loadDish();
   }, [dish, id]);
 
-  // Check if proxy is needed once we have the dish URL
   useEffect(() => {
     const checkProxy = async () => {
       if (dish?.url) {
@@ -54,6 +60,37 @@ export const Recipe = () => {
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating dish:', error);
+    }
+  };
+
+  const handleImageUpload = async (event) => {
+    if (!dish?._id) return;
+    const files = Array.from(event.target.files || []);
+
+    try {
+      let updatedDish = dish;
+      for (const file of files) {
+        updatedDish = await uploadDishImage(dish._id, file);
+      }
+      setDish(updatedDish);
+      event.target.value = '';
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('שגיאה בהעלאת תמונה');
+    }
+  };
+
+  const handleImageDelete = async (publicId) => {
+    if (!dish?._id) return;
+    const confirmDelete = window.confirm('למחוק את התמונה?');
+    if (!confirmDelete) return;
+
+    try {
+      const updatedDish = await deleteDishImage(dish._id, publicId);
+      setDish(updatedDish);
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      alert('שגיאה במחיקת תמונה');
     }
   };
 
@@ -85,6 +122,40 @@ export const Recipe = () => {
       {isEditing ? (
         <div className="edit-view">
           <RecipeForm dish={dish} handleChange={handleChange} />
+
+          {/* 🔹 images + upload WHILE editing */}
+          {dish.images?.length > 0 && (
+            <div className="recipe-images">
+              {dish.images.map((img) => (
+                <div key={img.publicId} className="recipe-image-wrapper">
+                  <img src={img.url} alt={dish.name} />
+                  <button
+                    type="button"
+                    className="delete-image-btn"
+                    onClick={() => handleImageDelete(img.publicId)}
+                  >
+                    🗑️ מחיקת תמונה
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="recipe-image-upload">
+            <label className="upload-label">
+              הוספת תמונות
+              <span className="upload-icon">📸</span>
+            </label>
+
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="upload-input"
+              onChange={handleImageUpload}
+            />
+          </div>
+
         </div>
       ) : dish.url ? (
         <div className="iframe-container">
@@ -98,12 +169,33 @@ export const Recipe = () => {
             title={dish.name}
             allowFullScreen
           />
+          {/* read-only images when viewing URL recipe */}
+          {dish.images?.length > 0 && (
+            <div className="recipe-images">
+              {dish.images.map((img) => (
+                <div key={img.publicId} className="recipe-image-wrapper">
+                  <img src={img.url} alt={dish.name} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="recipe-details">
           <RecipeField label={dish.name} field="description" dish={dish} />
           <RecipeField label="מרכיבים" field="ingredients" dish={dish} />
           <RecipeField label="הוראות הכנה" field="instruction" dish={dish} />
+
+          {/* read-only images when viewing normal recipe */}
+          {dish.images?.length > 0 && (
+            <div className="recipe-images">
+              {dish.images.map((img) => (
+                <div key={img.publicId} className="recipe-image-wrapper">
+                  <img src={img.url} alt={dish.name} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

@@ -7,7 +7,13 @@ const dishSchema = new mongoose.Schema({
   instruction: String,
   url: String,
   categoryid: { type: Number },
-  dishid: { type: Number }
+  dishid: { type: Number },
+  images: [
+    {
+      url: String,
+      publicId: String,
+    },
+  ]
 });
 
 module.exports = mongoose.model('Dish', dishSchema);
