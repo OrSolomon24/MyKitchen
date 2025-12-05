@@ -18,11 +18,12 @@ export const fetchCategories = async () => {
   }
 };
 
+
 export const addRecipe = async (recipeData, selectedCategories) => {
   try {
-    await Promise.all(
+    const createdDishes = await Promise.all(
       selectedCategories.map(async (categoryId) => {
-        await fetch(`${apiUrl}/api/food/dish`, {
+        const response = await fetch(`${apiUrl}/api/food/dish`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -33,13 +34,22 @@ export const addRecipe = async (recipeData, selectedCategories) => {
             categoryid: parseInt(categoryId, 10),
           }),
         });
+
+        if (!response.ok) {
+          throw new Error('Failed to add recipe');
+        }
+
+        return await response.json(); // 👈 newDish from backend (has _id)
       })
     );
+
+    return createdDishes; // array of dishes (one per category)
   } catch (error) {
     console.error('Error adding recipe:', error);
     throw error;
   }
 };
+
 
 
 

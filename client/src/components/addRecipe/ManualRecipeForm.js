@@ -10,6 +10,7 @@ export const ManualRecipeForm = ({
   setIngredients,
   instruction,
   setInstruction,
+  onImagesChange,          // 👈 NEW
 }) => (
   <>
     <label htmlFor="recipe-name">שם המתכון:</label>
@@ -20,6 +21,7 @@ export const ManualRecipeForm = ({
       value={recipeName}
       onChange={(e) => setRecipeName(e.target.value)}
     />
+
     <label htmlFor="recipe-description">תיאור המתכון:</label>
     <textarea
       id="recipe-description"
@@ -27,6 +29,7 @@ export const ManualRecipeForm = ({
       value={recipeDescription}
       onChange={(e) => setRecipeDescription(e.target.value)}
     />
+
     <label htmlFor="ingredients">מצרכים:</label>
     <textarea
       id="ingredients"
@@ -34,12 +37,26 @@ export const ManualRecipeForm = ({
       value={ingredients}
       onChange={(e) => setIngredients(e.target.value)}
     />
+
     <label htmlFor="instruction">הוראות הכנה:</label>
     <textarea
       id="instruction"
       placeholder="הזן את הוראות ההכנה"
       value={instruction}
       onChange={(e) => setInstruction(e.target.value)}
+    />
+
+    {/* 🔹 Images input */}
+    <label htmlFor="recipe-images">תמונות:</label>
+    <input
+      type="file"
+      id="recipe-images"
+      accept="image/*"
+      multiple
+      onChange={(e) => {
+        const files = Array.from(e.target.files || []);
+        onImagesChange && onImagesChange(files);
+      }}
     />
   </>
 );

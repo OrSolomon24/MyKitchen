@@ -177,3 +177,87 @@ textarea {
   border: 1px solid #ccc;
   font-size: 16px;
 }
+
+
+/* ---------- Upload Section ---------- */
+.recipe-image-upload {
+  margin-top: 20px;
+}
+
+.upload-label {
+  font-weight: bold;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.upload-icon {
+  font-size: 1.3rem;
+}
+
+/* Hide the ugly default input button */
+.upload-input {
+  border: 2px dashed #bbb;
+  padding: 12px;
+  width: 100%;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.upload-input:hover {
+  border-color: #888;
+  background: #f0f0f0;
+}
+
+
+/* ---------- Image Display ---------- */
+.recipe-images {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  justify-content: center;
+  gap: 15px;
+}
+
+
+.recipe-image-wrapper {
+  position: relative;
+  display: inline-block;
+  
+}
+
+.recipe-image-wrapper img {
+  width: 180px;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  object-fit: cover;
+}
+
+
+/* ---------- Delete Button ---------- */
+.delete-image-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(220, 0, 0, 0.85);
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: 0.2s ease;
+}
+
+.delete-image-btn:hover {
+  background: rgba(255, 0, 0, 1);
+  transform: scale(1.05);
+}

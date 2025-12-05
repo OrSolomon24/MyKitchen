@@ -67,3 +67,35 @@ export const checkIfProxyIsNeeded = async (url) => {
     return true; // Assume proxy is needed if the fetch fails
   }
 };
+
+
+
+export const uploadDishImage = async (dishId, file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch(`${apiUrl}/api/food/dish/${dishId}/images`, {
+    method: 'POST',
+    headers: {
+      ...getAuthHeader(), // DO NOT set Content-Type, browser will set it for multipart
+    },
+    body: formData,
+  });
+
+  if (!response.ok) throw new Error('Failed to upload image');
+  return await response.json(); // updated dish
+};
+
+export const deleteDishImage = async (dishId, publicId) => {
+  const response = await fetch(
+    `${apiUrl}/api/food/dish/${dishId}/images/${encodeURIComponent(publicId)}`,
+    {
+      method: 'DELETE',
+      headers: {
+        ...getAuthHeader(),
+      },
+    }
+  );
+  if (!response.ok) throw new Error('Failed to delete image');
+  return await response.json(); // updated dish
+};
