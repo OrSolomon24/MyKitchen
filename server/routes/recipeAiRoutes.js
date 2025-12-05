@@ -5,11 +5,19 @@ const Dish = require('../models/Dish');
 const authMiddleware = require('../middleware/authMiddleware');
 const { clearCache } = require('../utils/cache');
 
-// If you're on Node 18+, you can use global fetch and remove this require.
-// Otherwise, install: npm install node-fetch
 const fetch = global.fetch || require('node-fetch');
 
 const AGENT_URL = process.env.RECIPE_AGENT_URL || 'http://localhost:8000';
+
+function normalizeLines(items) {
+  if (!items) return [];
+  const arr = Array.isArray(items) ? items : [items];
+
+  return arr
+    .flatMap((item) => String(item).split('\n'))
+    .map((line) => line.trim())
+    .filter((line) => line !== '');
+}
 
 /**
  * POST /api/recipes/ai-import
@@ -54,27 +62,26 @@ router.post('/ai-import', authMiddleware, async (req, res) => {
       instructions,
     } = agentData;
 
-    const ingredientsArray = Array.isArray(ingredients) ? ingredients : [];
-    const instructionsArray = Array.isArray(instructions) ? instructions : [];
+    // 🔹 normalize to array-of-lines
+    const ingredientsArray = normalizeLines(ingredients);
+    const instructionsArray = normalizeLines(instructions);
 
-    const ingredientsText = ingredientsArray.join('\n');
+    // if you want instruction stored as ONE string with line breaks (like manual flow):
     const instructionText = instructionsArray.join('\n');
 
-    // 2. Insert into Mongo – same idea as your /dish POST
-    const dishid = Math.floor(Math.random() * 1000) + 1;
-
+    // 2. Insert into Mongo
+    // (you no longer need dishid if you moved to _id everywhere)
     const docsToInsert = categoryIds.map((categoryId) => ({
       categoryid: parseInt(categoryId, 10),
-      dishid,
       name: finalName || name,
       description: finalDescription || description,
-      ingredients: ingredientsText,
-      instruction: instructionText,
+      ingredients: ingredientsArray,    // 👈 now REAL array
+      instruction: instructionText,     // 👈 string (as before)
     }));
 
     const newDishes = await Dish.insertMany(docsToInsert);
 
-    // 3. Clear dishes cache, like in /dish POST
+    // 3. Clear dishes cache
     clearCache('dishes');
 
     return res.status(201).json({
