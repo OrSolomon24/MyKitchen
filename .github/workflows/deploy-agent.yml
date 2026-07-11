@@ -32,6 +32,10 @@ jobs:
         with:
           python-version: '3.12'
 
+      # Vercel's Python builder shells out to `uv` to install dependencies;
+      # it's not preinstalled on ubuntu-latest.
+      - uses: astral-sh/setup-uv@v5
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
