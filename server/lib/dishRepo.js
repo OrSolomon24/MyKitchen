@@ -8,8 +8,22 @@ const DISH_SELECT = `
   dish_images(id, storage_path, position)
 `;
 
+// List view never renders ingredients/steps, so skip those joins entirely
+// to cut payload size and DB work for the endpoint hit on every page load.
+const DISH_LIST_SELECT = `
+  id, name, description, source_url, created_at, updated_at,
+  dish_categories(category_id),
+  dish_images(id, storage_path, position)
+`;
+
 function toPublicUrl(storagePath) {
   return supabase.storage.from('dish-images').getPublicUrl(storagePath).data.publicUrl;
+}
+
+function shapeImages(row) {
+  return (row.dish_images || [])
+    .sort((a, b) => a.position - b.position)
+    .map((img) => ({ id: img.id, url: toPublicUrl(img.storage_path) }));
 }
 
 function shapeDish(row) {
@@ -25,9 +39,20 @@ function shapeDish(row) {
     steps: (row.dish_steps || [])
       .sort((a, b) => a.position - b.position)
       .map((s) => s.text),
-    images: (row.dish_images || [])
-      .sort((a, b) => a.position - b.position)
-      .map((img) => ({ id: img.id, url: toPublicUrl(img.storage_path) })),
+    images: shapeImages(row),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function shapeDishListItem(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    sourceUrl: row.source_url,
+    categoryIds: (row.dish_categories || []).map((c) => c.category_id),
+    images: shapeImages(row),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -39,13 +64,13 @@ async function fetchDishById(id) {
   return shapeDish(data);
 }
 
-async function fetchAllDishes() {
+async function fetchDishListView() {
   const { data, error } = await supabase
     .from('dishes')
-    .select(DISH_SELECT)
+    .select(DISH_LIST_SELECT)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data.map(shapeDish);
+  return data.map(shapeDishListItem);
 }
 
-module.exports = { shapeDish, fetchDishById, fetchAllDishes, toPublicUrl };
+module.exports = { shapeDish, fetchDishById, fetchDishListView, toPublicUrl };

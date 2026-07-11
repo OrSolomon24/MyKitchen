@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from './Modal';
 import { Button } from './Button';
-import './ConfirmDialog.css';
+import { Input } from './Input';
 
 export const PromptDialog = ({
   title,
@@ -21,17 +21,17 @@ export const PromptDialog = ({
 
   return (
     <Modal onClose={onCancel}>
-      <form className="confirm-dialog" onSubmit={handleSubmit}>
-        {title && <h3>{title}</h3>}
-        <input
+      <form onSubmit={handleSubmit}>
+        {title && <h3 className="text-lg font-bold text-text mb-2">{title}</h3>}
+        <Input
           type="text"
           autoFocus
           placeholder={placeholder}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="prompt-dialog-input"
+          className="mb-5"
         />
-        <div className="confirm-dialog-actions">
+        <div className="flex justify-end gap-3">
           <Button type="button" variant="ghost" onClick={onCancel}>
             {cancelLabel}
           </Button>

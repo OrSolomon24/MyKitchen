@@ -4,7 +4,7 @@ import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { Button } from '../ui/Button';
 
 export const RecipeButtons = ({ isEditing, handleSave, setIsEditing, handleDelete }) => (
-  <div className="buttons-container">
+  <div className="mt-6 flex justify-center gap-4">
     <Button variant="primary" onClick={() => (isEditing ? handleSave() : setIsEditing(true))}>
       {isEditing ? 'שמור שינויים' : <><FaPencilAlt /> ערוך מתכון</>}
     </Button>

@@ -1,11 +1,15 @@
 // components/auth/SignInForm.js
 import React from 'react';
+import { Input } from '../ui/Input';
+import { Button } from '../ui/Button';
 
 export const SignInForm = ({ username, password, setUsername, setPassword, handleSubmit }) => (
-  <form onSubmit={handleSubmit} className="signin-form">
-    <div className="form-group">
-      <label htmlFor="username">שם משתמש:</label>
-      <input
+  <form onSubmit={handleSubmit} className="flex w-full flex-col">
+    <div className="mb-5">
+      <label htmlFor="username" className="mb-2 block font-semibold text-text">
+        שם משתמש:
+      </label>
+      <Input
         type="text"
         id="username"
         value={username}
@@ -13,9 +17,11 @@ export const SignInForm = ({ username, password, setUsername, setPassword, handl
         required
       />
     </div>
-    <div className="form-group">
-      <label htmlFor="password">סיסמה:</label>
-      <input
+    <div className="mb-5">
+      <label htmlFor="password" className="mb-2 block font-semibold text-text">
+        סיסמה:
+      </label>
+      <Input
         type="password"
         id="password"
         value={password}
@@ -23,6 +29,8 @@ export const SignInForm = ({ username, password, setUsername, setPassword, handl
         required
       />
     </div>
-    <button type="submit">התחבר</button>
+    <Button type="submit" variant="primary" className="mt-2 w-full">
+      התחבר
+    </Button>
   </form>
 );

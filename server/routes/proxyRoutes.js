@@ -2,7 +2,7 @@
 const express = require('express');
 const dns = require('dns').promises;
 const net = require('net');
-const supabase = require('../lib/supabaseClient');
+const { verifySupabaseJwt } = require('../lib/verifyJwt');
 const router = express.Router();
 
 const MAX_RESPONSE_BYTES = 5 * 1024 * 1024; // 5MB
@@ -11,7 +11,7 @@ const FETCH_TIMEOUT_MS = 10000;
 // This route is loaded into an <iframe src="..."> on the client, so the
 // browser can't attach an Authorization header to the request. Accept the
 // token via a `token` query param as well as the header.
-async function verifyProxyToken(req, res, next) {
+function verifyProxyToken(req, res, next) {
   const authHeader = req.headers.authorization;
   const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
   const token = headerToken || req.query.token;
@@ -20,12 +20,12 @@ async function verifyProxyToken(req, res, next) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data?.user) {
+  try {
+    verifySupabaseJwt(token);
+    next();
+  } catch (error) {
     return res.status(401).json({ error: 'Invalid token' });
   }
-
-  next();
 }
 
 function isPrivateOrLocalIp(ip) {

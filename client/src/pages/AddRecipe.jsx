@@ -1,41 +1,29 @@
 // pages/AddRecipe.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FormSelection } from '../components/addRecipe/FormSelection';
 import { ManualRecipeForm } from '../components/addRecipe/ManualRecipeForm';
 import { LinkRecipeForm } from '../components/addRecipe/LinkRecipeForm';
 import { CategorySelection } from '../components/addRecipe/CategorySelection';
 import { LinkToAgentForm } from '../components/addRecipe/LinkToAgentForm';
-import { addRecipe, uploadDishImage } from '../api/dishes';
-import { importRecipeFromLinkWithAI } from '../api/recipes';
-import { fetchCategories } from '../api/categories';
+import { useAddRecipeMutation } from '../api/useDishesQueries';
+import { useImportRecipeFromLinkWithAI } from '../api/useRecipeAiImport';
+import { useCategories } from '../api/useCategoriesQueries';
 import { toast } from 'react-toastify';
 import { Button } from '../components/ui/Button';
-import '../style/AddRecipe.css';
 
 export const AddRecipe = () => {
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const addRecipeMutation = useAddRecipeMutation();
+  const importRecipeMutation = useImportRecipeFromLinkWithAI();
+
   const [formType, setFormType] = useState('');
-  const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [recipeName, setRecipeName] = useState('');
   const [recipeDescription, setRecipeDescription] = useState('');
   const [ingredients, setIngredients] = useState('');
   const [instruction, setInstruction] = useState('');
   const [recipeLink, setRecipeLink] = useState('');
-  const [isAgentLoading, setIsAgentLoading] = useState(false);
   const [recipeImages, setRecipeImages] = useState([]);   // 👈 NEW
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const categoryData = await fetchCategories();
-        setCategories(categoryData);
-      } catch (error) {
-        console.error(error);
-        toast.error('שגיאה בטעינת הקטגוריות');
-      }
-    };
-    loadCategories();
-  }, []);
 
   const handleFormSelection = (type) => {
     resetForm();
@@ -87,15 +75,11 @@ export const AddRecipe = () => {
     };
 
     try {
-      // 1) Create the recipe (one dish, linked to every selected category)
-      const newDish = await addRecipe(recipeData, selectedCategories);
-
-      // 2) Upload images (if any) to the created dish
-      if (formType === 'manual' && recipeImages.length > 0) {
-        for (const file of recipeImages) {
-          await uploadDishImage(newDish.id, file);
-        }
-      }
+      await addRecipeMutation.mutateAsync({
+        recipeData,
+        categoryIds: selectedCategories,
+        images: formType === 'manual' ? recipeImages : [],
+      });
 
       toast.success('המתכון נוסף בהצלחה!');
       resetForm();
@@ -124,9 +108,7 @@ export const AddRecipe = () => {
     }
 
     try {
-      setIsAgentLoading(true);
-
-      await importRecipeFromLinkWithAI({
+      await importRecipeMutation.mutateAsync({
         url: recipeLink,
         name: recipeName,
         description: recipeDescription,
@@ -139,8 +121,6 @@ export const AddRecipe = () => {
     } catch (error) {
       console.error(error);
       toast.error('אירעה שגיאה בייבוא המתכון. נסה שוב.');
-    } finally {
-      setIsAgentLoading(false);
     }
   };
 
@@ -155,15 +135,15 @@ export const AddRecipe = () => {
   };
 
   return (
-    <div className="add-recipe-container">
-      <h1>אין כמו מתכון חדש וטעים!</h1>
+    <div className="mx-auto my-6 mb-16 flex max-w-[640px] flex-col items-center rounded-lg bg-surface p-6 shadow-md md:my-8">
+      <h1 className="mb-5 text-center text-xl font-bold text-primary">אין כמו מתכון חדש וטעים!</h1>
 
       {formType === '' && (
         <FormSelection handleFormSelection={handleFormSelection} />
       )}
 
       {formType === 'manual' && (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex w-full flex-col">
           <ManualRecipeForm
             recipeName={recipeName}
             setRecipeName={setRecipeName}
@@ -177,15 +157,16 @@ export const AddRecipe = () => {
           />
           <CategorySelection
             categories={categories}
+            isLoading={categoriesLoading}
             handleCategoryChange={handleCategoryChange}
             selectedCategories={selectedCategories}
           />
-          <Button type="submit" variant="primary">הוספת מתכון</Button>
+          <Button type="submit" variant="primary" className="w-full">הוספת מתכון</Button>
         </form>
       )}
 
       {formType === 'link' && (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex w-full flex-col">
           <LinkRecipeForm
             recipeLink={recipeLink}
             setRecipeLink={setRecipeLink}
@@ -196,10 +177,11 @@ export const AddRecipe = () => {
           />
           <CategorySelection
             categories={categories}
+            isLoading={categoriesLoading}
             handleCategoryChange={handleCategoryChange}
             selectedCategories={selectedCategories}
           />
-          <Button type="submit" variant="primary">הוספת מתכון</Button>
+          <Button type="submit" variant="primary" className="w-full">הוספת מתכון</Button>
         </form>
       )}
 
@@ -212,10 +194,11 @@ export const AddRecipe = () => {
           recipeDescription={recipeDescription}
           setRecipeDescription={setRecipeDescription}
           categories={categories}
+          categoriesLoading={categoriesLoading}
           selectedCategories={selectedCategories}
           handleCategoryChange={handleCategoryChange}
           onSubmit={handleAgentSubmit}
-          isLoading={isAgentLoading}
+          isLoading={importRecipeMutation.isPending}
         />
       )}
     </div>

@@ -1,118 +1,88 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import FoodTypes from '../components/foodCategories/FoodTypes';
 import RecipesList from '../components/foodCategories/RecipesList';
-import { fetchCategories } from '../api/categories';
-import { fetchDishes } from '../api/dishes';
-import Loader from '../components/Loader';
-import '../style/FoodCategories.css';
+import { useCategories } from '../api/useCategoriesQueries';
+import { useDishes } from '../api/useDishesQueries';
 
 export const FoodCategories = () => {
-  const [categories, setCategories] = useState([]);
-  const [dishes, setDishes] = useState([]);
-  const [filteredDishes, setFilteredDishes] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedCategoryName, setSelectedCategoryName] = useState('');
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const { data: dishes = [], isLoading: dishesLoading } = useDishes();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchCategoriesAndDishes();
-  }, []);
+  const selectedCategory = searchParams.get('category');
+  const selectedCategoryName = useMemo(
+    () => categories.find((category) => category.id === selectedCategory)?.name || '',
+    [categories, selectedCategory]
+  );
 
-  useEffect(() => {
-    filterDishes();
-  }, [selectedCategory, searchTerm, dishes]);
+  const filteredDishes = useMemo(() => {
+    let filtered = dishes;
 
-  const fetchCategoriesAndDishes = async () => {
-    setLoading(true);
-    try {
-      const categoryData = await fetchCategories();
-      setCategories(categoryData);
-
-      const dishData = await fetchDishes();
-      setDishes(dishData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
+    if (selectedCategory) {
+      filtered = filtered.filter((dish) => dish.categoryIds?.includes(selectedCategory));
     }
-  };
 
-
-  const refreshCategories = async () => {
-    try {
-      const categoryData = await fetchCategories();
-      setCategories(categoryData);
-    } catch (error) {
-      console.error('Error refreshing categories:', error);
+    if (searchTerm.trim() !== '') {
+      filtered = filtered.filter((dish) =>
+        dish.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-  };
 
-  const handleCategoryClick = (categoryId, categoryName) => {
-    setSelectedCategory(categoryId);
-    setSelectedCategoryName(categoryName);
+    return filtered;
+  }, [dishes, selectedCategory, searchTerm]);
+
+  const handleCategoryClick = (categoryId) => {
+    setSearchParams(categoryId ? { category: categoryId } : {});
     setSearchTerm('');
   };
 
   const handleSearchTermChange = (e) => {
     setSearchTerm(e.target.value);
     if (e.target.value) {
-      setSelectedCategory(null); 
-      setSelectedCategoryName(''); 
+      setSearchParams({});
     }
   };
 
   const handleDishClick = (dishId) => {
     const selectedDish = dishes.find(dish => dish.id === dishId);
-    navigate(`/recipe/${dishId}`, { state: { dish: selectedDish } });
+    navigate(`/recipe/${dishId}`, {
+      state: {
+        dish: selectedDish,
+        categoryId: selectedCategory || null,
+        categoryName: selectedCategoryName || '',
+      },
+    });
   };
-
-
-  const filterDishes = () => {
-    let filtered = dishes;
-
-    if (selectedCategory) {
-      filtered = filtered.filter(dish => dish.categoryIds?.includes(selectedCategory));
-    }
-
-    if (searchTerm.trim() !== '') {
-      filtered = filtered.filter(dish =>
-        dish.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    setFilteredDishes(filtered);
-  };
-  if (loading) return <Loader />; // ✅ show loader during initial fetch
 
   return (
-    <div className="food-categories-container">
-
-        <FoodTypes
-          categories={categories}
-          onCategoryClick={handleCategoryClick}
-          selectedCategory={selectedCategory}
-          refreshCategories={refreshCategories}
-        />
-        <div className="recipt-list">
-      <div className="sidebar">
-        <input
-          type="text"
-          className="search-bar"
-          placeholder="חיפוש מנה..."
-          value={searchTerm}
-          onChange={handleSearchTermChange}
-        />
-      </div>
-      <RecipesList
-        dishes={filteredDishes}
+    <div className="mx-auto flex max-w-[1200px] flex-col items-start gap-6 p-4 md:flex-row md:p-6">
+      <FoodTypes
+        categories={categories}
+        isLoading={categoriesLoading}
+        onCategoryClick={handleCategoryClick}
         selectedCategory={selectedCategory}
-        selectedCategoryName={selectedCategoryName}
-        onDishClick={handleDishClick}
       />
+      <div className="min-w-0 flex-1">
+        <div className="mb-5">
+          <input
+            type="text"
+            placeholder="חיפוש מנה..."
+            value={searchTerm}
+            onChange={handleSearchTermChange}
+            className="w-full rounded-full border-[1.5px] border-border bg-surface px-4 py-3 text-base text-text focus:outline-none focus:border-primary"
+          />
+        </div>
+        <RecipesList
+          dishes={filteredDishes}
+          isLoading={dishesLoading}
+          selectedCategory={selectedCategory}
+          selectedCategoryName={selectedCategoryName}
+          onDishClick={handleDishClick}
+        />
       </div>
     </div>
   );

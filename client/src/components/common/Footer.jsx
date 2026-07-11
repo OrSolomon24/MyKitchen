@@ -1,11 +1,10 @@
 // Footer.js
 import React from 'react';
-import '../../style/Footer.css';
 
 export const Footer = () => {
   return (
-    <footer className="footer">
-      <p>© 2024 Or Solomon</p>
+    <footer className="hidden bg-surface-muted px-4 py-4 text-center text-sm text-text-muted md:block">
+      <p className="m-0">© 2024 Or Solomon</p>
     </footer>
   );
 };

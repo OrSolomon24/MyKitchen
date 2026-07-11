@@ -1,18 +1,18 @@
 // components/foodCategories/AddCategory.js
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import { addCategory } from '../../api/categories';
+import { useAddCategoryMutation } from '../../api/useCategoriesQueries';
 import { PromptDialog } from '../ui/PromptDialog';
 import { Button } from '../ui/Button';
 
-const AddCategory = ({ refreshCategories }) => {
+const AddCategory = () => {
   const [isPromptOpen, setIsPromptOpen] = useState(false);
+  const addCategoryMutation = useAddCategoryMutation();
 
   const handleAddCategory = async (name) => {
     setIsPromptOpen(false);
     try {
-      await addCategory(name);
-      refreshCategories();
+      await addCategoryMutation.mutateAsync(name);
     } catch (error) {
       toast.error('שגיאה בהוספת קטגוריה');
     }
@@ -20,7 +20,7 @@ const AddCategory = ({ refreshCategories }) => {
 
   return (
     <>
-      <Button variant="secondary" onClick={() => setIsPromptOpen(true)} className="add-category-button">
+      <Button variant="secondary" onClick={() => setIsPromptOpen(true)} className="mb-2 w-full">
         הוסף קטגוריה
       </Button>
       {isPromptOpen && (

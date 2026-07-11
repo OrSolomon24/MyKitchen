@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase, usernameToEmail } from '../api/supabaseClient';
 import { SignInForm } from '../components/auth/SignInForm';
 import { ErrorMessage } from '../components/auth/ErrorMessage';
-import '../style/SignIn.css';
 
 export const SignIn = () => {
   const [username, setUsername] = useState('');
@@ -29,7 +28,7 @@ export const SignIn = () => {
   };
 
   return (
-    <div className="signin-container">
+    <div className="mx-auto my-8 flex max-w-[440px] flex-col items-center rounded-lg bg-surface p-6 shadow-md md:my-16 md:p-12">
       <ErrorMessage errorMessage={errorMessage} /> {/* Display error message */}
       <SignInForm
         username={username}

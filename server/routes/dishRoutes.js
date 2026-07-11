@@ -4,13 +4,13 @@ const router = express.Router();
 const multer = require('multer');
 const supabase = require('../lib/supabaseClient');
 const authMiddleware = require('../middleware/authMiddleware');
-const { fetchDishById, fetchAllDishes } = require('../lib/dishRepo');
+const { fetchDishById, fetchDishListView } = require('../lib/dishRepo');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/dish', authMiddleware, async (req, res) => {
   try {
-    const dishes = await fetchAllDishes();
+    const dishes = await fetchDishListView();
     res.json(dishes);
   } catch (error) {
     res.status(500).json({ message: error.message });
