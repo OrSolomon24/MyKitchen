@@ -17,7 +17,7 @@ app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"message": "Recipe AI agent is running with Gemini"}
+    return {"message": "Recipe AI agent is running"}
 
 
 @app.post("/parse-recipe", response_model=ParseRecipeResponse)

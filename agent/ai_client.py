@@ -1,27 +1,36 @@
 # ai_client.py
-from langchain_google_genai import ChatGoogleGenerativeAI
+import warnings
 
-from config import GEMINI_API_KEY, GEMINI_MODEL_NAME
+from langchain_openai import ChatOpenAI
 
-# Single, reusable Gemini client (DRY)
-model = ChatGoogleGenerativeAI(
-    model=GEMINI_MODEL_NAME,
-    google_api_key=GEMINI_API_KEY,
+from config import OPEN_ROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_MODEL_NAME
+from schemas import RecipeExtraction
+
+# We only ever call .invoke() (never .stream()), so this warning doesn't apply.
+warnings.filterwarnings(
+    "ignore",
+    message="Streaming with Pydantic response_format not yet supported.",
+    category=UserWarning,
+)
+
+# Single, reusable OpenRouter client (DRY)
+model = ChatOpenAI(
+    model=OPENROUTER_MODEL_NAME,
+    api_key=OPEN_ROUTER_API_KEY,
+    base_url=OPENROUTER_BASE_URL,
     temperature=0.1,
     timeout=30,
 )
 
+# Native structured-output mode (response_format) enforces the RecipeExtraction
+# schema instead of relying on the model to format raw JSON correctly.
+# (method="function_calling" was tried first but this model doesn't reliably
+# emit tool calls via OpenRouter, silently returning None.)
+structured_model = model.with_structured_output(RecipeExtraction, method="json_schema")
 
-def invoke_gemini(prompt: str) -> str:
+
+def invoke_model(prompt: str) -> RecipeExtraction:
     """
-    Send a prompt to Gemini and return the raw text output.
+    Send a prompt to the model and return a validated RecipeExtraction.
     """
-    resp = model.invoke(prompt)
-    content = resp.content
-
-    if isinstance(content, list):
-        text = "".join(getattr(block, "text", str(block)) for block in content)
-    else:
-        text = str(content)
-
-    return text
+    return structured_model.invoke(prompt)

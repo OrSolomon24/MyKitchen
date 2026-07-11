@@ -27,6 +27,6 @@ COPY config.py prompts.py schemas.py ai_client.py recipe_agent.py app.py ./
 # Expose FastAPI port
 EXPOSE 8000
 
-# The GEMINI_API_KEY will be provided as an environment variable at runtime
+# The OPEN_ROUTER_API_KEY will be provided as an environment variable at runtime
 # CMD runs uvicorn
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

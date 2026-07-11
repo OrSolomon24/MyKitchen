@@ -4,7 +4,7 @@ def build_recipe_extraction_prompt(
     html: str, user_name: str, user_description: str, target_language: str = "Hebrew"
 ) -> str:
     """
-    Returns a single prompt string to send to Gemini.
+    Returns a single prompt string to send to the model.
     We keep it in one place so it's easy to tweak.
     """
     system_instructions = f"""

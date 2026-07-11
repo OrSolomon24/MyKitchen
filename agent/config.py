@@ -4,9 +4,13 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load .env from current directory
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    raise RuntimeError("GEMINI_API_KEY environment variable is required")
+OPEN_ROUTER_API_KEY = os.environ.get("OPEN_ROUTER_API_KEY")
+if not OPEN_ROUTER_API_KEY:
+    raise RuntimeError("OPEN_ROUTER_API_KEY environment variable is required")
 
-# You already verified this model works in test_gemini.py
-GEMINI_MODEL_NAME = "gemini-2.5-flash"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+# Free-tier model on OpenRouter (no Gemini free tier is currently offered there).
+# Chosen because it's one of the few free models supporting native structured
+# outputs and tool calling (needed for reliable JSON + future web-fetch tools).
+OPENROUTER_MODEL_NAME = "tencent/hy3:free"
