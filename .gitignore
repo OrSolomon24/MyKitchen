@@ -2,3 +2,4 @@
 
 # one-off DB migration helper, not part of the running app
 migration/
+.env*.local

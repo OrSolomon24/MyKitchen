@@ -19,9 +19,6 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_AGENT }}
-    defaults:
-      run:
-        working-directory: agent
     steps:
       - uses: actions/checkout@v4
 
@@ -29,9 +26,18 @@ jobs:
         with:
           node-version: 20
 
+      # Must match (or be compatible with) agent/.python-version -- `vercel build`
+      # builds the Python function locally and needs a matching interpreter on PATH.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      # This project's "Root Directory" is set to "agent" in Vercel's dashboard,
+      # so these commands run from the repo root and let Vercel resolve into
+      # agent/ itself -- running them from inside agent/ would double the path.
       - name: Pull Vercel project settings & env vars
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 

@@ -19,9 +19,6 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_CLIENT }}
-    defaults:
-      run:
-        working-directory: client
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +29,9 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      # This project's "Root Directory" is set to "client" in Vercel's dashboard,
+      # so these commands run from the repo root and let Vercel resolve into
+      # client/ itself -- running them from inside client/ would double the path.
       - name: Pull Vercel project settings & env vars
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
