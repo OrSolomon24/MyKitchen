@@ -8,6 +8,7 @@ model = ChatGoogleGenerativeAI(
     model=GEMINI_MODEL_NAME,
     google_api_key=GEMINI_API_KEY,
     temperature=0.1,
+    timeout=30,
 )
 
 

@@ -4,6 +4,9 @@ FROM python:3.11-slim
 # Make stdout/stderr unbuffered (good for logs)
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+# Recipe output can contain non-ASCII (e.g. Hebrew) text that gets printed to
+# stdout for debugging — force UTF-8 so that never crashes the process.
+ENV PYTHONIOENCODING=utf-8
 
 # Create app directory
 WORKDIR /app

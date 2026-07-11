@@ -9,14 +9,29 @@ from ai_client import invoke_gemini
 from prompts import build_recipe_extraction_prompt
 
 
+FETCH_HEADERS = {
+    # Many recipe sites block requests with no/generic User-Agent.
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    ),
+}
+
+
 async def fetch_html(url: str, timeout: float = 30.0) -> str:
     try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
+        async with httpx.AsyncClient(timeout=timeout, headers=FETCH_HEADERS, follow_redirects=True) as client:
             r = await client.get(url)
             r.raise_for_status()
             return r.text
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to fetch URL: {e}")
+
+
+class RecipeExtractionError(Exception):
+    """Raised when the model's output can't be turned into a recipe."""
 
 
 def clean_model_json_output(raw_text: str) -> dict:
@@ -35,18 +50,23 @@ def clean_model_json_output(raw_text: str) -> dict:
             cleaned = cleaned[:-3]
         cleaned = cleaned.strip()
 
+    if not cleaned:
+        raise RecipeExtractionError("Model returned an empty response")
+
     try:
         data = json.loads(cleaned)
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to parse JSON from model: {e}. Raw: {cleaned[:200]}",
-        )
+        raise RecipeExtractionError(f"Model did not return valid JSON: {e}")
+
+    if not isinstance(data, dict):
+        raise RecipeExtractionError("Model JSON output was not an object")
 
     return data
 
 
-async def extract_recipe_from_url(url: str, name: str, description: str) -> Tuple[List[str], List[str]]:
+async def extract_recipe_from_url(
+    url: str, name: str, description: str, target_language: str = "Hebrew"
+) -> Tuple[List[str], List[str]]:
     """
     High-level 'agent' function:
     - Fetch HTML
@@ -59,22 +79,29 @@ async def extract_recipe_from_url(url: str, name: str, description: str) -> Tupl
     html = await fetch_html(url)
 
     # 2. Build prompt
-    prompt = build_recipe_extraction_prompt(html, name, description)
+    prompt = build_recipe_extraction_prompt(html, name, description, target_language)
 
     # 3. Call Gemini
     try:
         raw = invoke_gemini(prompt)
     except Exception as e:
         import traceback
-        print("❌ Error calling Gemini:")
+        print("[error] Gemini call failed:")
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Gemini call failed: {e}")
+        raise HTTPException(status_code=502, detail=f"Recipe extraction service failed: {e}")
 
-    print("🔎 Raw Gemini output (first 300 chars):")
+    print("[debug] Raw Gemini output (first 300 chars):")
     print(raw[:300])
 
     # 4. Parse JSON
-    recipe = clean_model_json_output(raw)
+    try:
+        recipe = clean_model_json_output(raw)
+    except RecipeExtractionError as e:
+        print(f"[warning] {e}. Raw (first 200 chars): {raw[:200]}")
+        raise HTTPException(
+            status_code=502,
+            detail="Could not extract a recipe from this page. Try a different URL or enter it manually.",
+        )
 
     ingredients = recipe.get("ingredients") or []
     instructions = recipe.get("instructions") or []
@@ -87,6 +114,6 @@ async def extract_recipe_from_url(url: str, name: str, description: str) -> Tupl
     ingredients = [str(x) for x in ingredients]
     instructions = [str(x) for x in instructions]
     if not ingredients and not instructions:
-        print("⚠️ Gemini returned empty ingredients & instructions for this URL.")
+        print("[warning] Gemini returned empty ingredients & instructions for this URL.")
 
     return ingredients, instructions

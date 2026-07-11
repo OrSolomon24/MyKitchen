@@ -7,6 +7,7 @@ class ParseRecipeRequest(BaseModel):
     url: HttpUrl
     name: str
     description: str
+    target_language: str = "Hebrew"
 
 
 class ParseRecipeResponse(BaseModel):

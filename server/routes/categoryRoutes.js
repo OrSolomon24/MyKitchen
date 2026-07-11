@@ -1,45 +1,54 @@
 const express = require('express');
 const router = express.Router();
-const Category = require('../models/Category');
-const Dish = require('../models/Dish');
-const { getCache, setCache, clearCache } = require('../utils/cache');
+const supabase = require('../lib/supabaseClient');
 const authMiddleware = require('../middleware/authMiddleware');
-const ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
 
-router.get('/category',authMiddleware, async (req, res) => {
-  const cached = getCache('categories');
-  if (cached) return res.json(cached);
-
+router.get('/category', authMiddleware, async (req, res) => {
   try {
-    const foodCategories = await Category.find();
-    setCache('categories', foodCategories, ONE_WEEK);
-    res.json(foodCategories);
+    const { data, error } = await supabase.from('categories').select('*').order('name');
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-router.post('/category',authMiddleware, async (req, res) => {
+router.post('/category', authMiddleware, async (req, res) => {
   try {
-    const category = new Category(req.body);
-    const newCategory = await category.save();
-    clearCache('categories');
-    res.status(201).json(newCategory);
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'name is required' });
+
+    const { data, error } = await supabase.from('categories').insert({ name }).select().single();
+    if (error) throw error;
+    res.status(201).json(data);
   } catch (error) {
     res.status(400).json({ error: 'An error occurred while creating the category' });
   }
 });
 
-router.delete('/category/:id',authMiddleware, async (req, res) => {
+router.delete('/category/:id', authMiddleware, async (req, res) => {
   try {
-    const categoryId = parseInt(req.params.id, 10);
-    const deletedCategory = await Category.findOneAndDelete({ id: categoryId });
-    if (!deletedCategory) return res.status(404).json({ message: 'Category not found' });
+    const { id } = req.params;
 
-    await Dish.deleteMany({ categoryid: categoryId });
-    clearCache('categories');
-    clearCache('dishes');
-    res.json({ message: 'Category and associated dishes deleted successfully' });
+    const { count } = await supabase
+      .from('dish_categories')
+      .select('*', { count: 'exact', head: true })
+      .eq('category_id', id);
+
+    if (count && count > 0) {
+      return res.status(409).json({
+        message: `Cannot delete category: ${count} recipe(s) are still assigned to it. Reassign or delete them first.`,
+      });
+    }
+
+    const { error, count: deletedCount } = await supabase
+      .from('categories')
+      .delete({ count: 'exact' })
+      .eq('id', id);
+    if (error) throw error;
+    if (!deletedCount) return res.status(404).json({ message: 'Category not found' });
+
+    res.json({ message: 'Category deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
