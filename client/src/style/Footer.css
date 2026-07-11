@@ -1,12 +1,11 @@
-/* Footer.css */
 .footer {
-    background-color: #8fa78b40;;
-    color: #34672d;;
-    text-align: center;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-  }
-  
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-4);
+  font-size: var(--font-size-sm);
+}
 
-  
+.footer p {
+  margin: 0;
+}

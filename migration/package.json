@@ -1,0 +1,14 @@
+{
+  "name": "mykitchen-migration",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-off Mongo -> Supabase migration tooling. Not part of the deployed app.",
+  "main": "migrate-to-supabase.js",
+  "scripts": {
+    "migrate": "node migrate-to-supabase.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.5.3"
+  }
+}

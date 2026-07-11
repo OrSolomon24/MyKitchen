@@ -1,15 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./db');
 const category = require('./routes/categoryRoutes');
 const dish = require('./routes/dishRoutes');
-const authRoutes = require('./routes/authRoutes');
 const proxyRoutes = require('./routes/proxyRoutes');
 const recipeAiRoutes = require('./routes/recipeAiRoutes');
 
 const app = express();
-connectDB();
 
 // ✅ הגדרת CORS עם דומיינים מותרים
 const allowedOrigins = [
@@ -33,17 +30,10 @@ app.use(express.json());
 
 app.use('/api/food', category);
 app.use('/api/food', dish);
-app.use('/auth', authRoutes);
 app.use('/api/recipes', recipeAiRoutes);
 app.use(proxyRoutes);
 
 module.exports = app;
-
-
-
-
-
-
 
 // comment out when developing locally to run the backend on port 5000
 // const PORT = process.env.PORT || 5000;

@@ -1,33 +1,39 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
-const Dish = require('../models/Dish');
-const { getCache, setCache, clearCache } = require('../utils/cache');
-const authMiddleware = require('../middleware/authMiddleware');
-const cloudinary = require('../utils/cloudinary');   // 👈 new
 const multer = require('multer');
+const supabase = require('../lib/supabaseClient');
+const authMiddleware = require('../middleware/authMiddleware');
+const { fetchDishById, fetchAllDishes } = require('../lib/dishRepo');
 
-const upload = multer({ storage: multer.memoryStorage() }); // keep in RAM
+const upload = multer({ storage: multer.memoryStorage() });
 
-const ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
-
-router.get('/dish',authMiddleware, async (req, res) => {
-  const cached = getCache('dishes');
-  if (cached) return res.json(cached);
-
+router.get('/dish', authMiddleware, async (req, res) => {
   try {
-    const dishes = await Dish.find();
-    setCache('dishes', dishes, ONE_WEEK);
+    const dishes = await fetchAllDishes();
     res.json(dishes);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-router.post('/dish',authMiddleware, async (req, res) => {
+router.post('/dish', authMiddleware, async (req, res) => {
   try {
-    const dish = new Dish(req.body);
-    const newDish = await dish.save();
-    clearCache('dishes');
+    const { name, description, sourceUrl, categoryIds, ingredients, steps } = req.body;
+    if (!name) return res.status(400).json({ message: 'name is required' });
+
+    const { data: newId, error } = await supabase.rpc('create_dish_with_relations', {
+      p_name: name,
+      p_description: description || null,
+      p_source_url: sourceUrl || null,
+      p_category_ids: categoryIds || [],
+      p_ingredients: ingredients || [],
+      p_steps: steps || [],
+      p_created_by: req.user?.id || null,
+    });
+    if (error) return res.status(400).json({ message: error.message });
+
+    const newDish = await fetchDishById(newId);
     res.status(201).json(newDish);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -36,22 +42,32 @@ router.post('/dish',authMiddleware, async (req, res) => {
 
 router.get('/dish/:id', authMiddleware, async (req, res) => {
   try {
-    const dish = await Dish.findById(req.params.id);
-    if (!dish) {
-      return res.status(404).json({ message: 'Dish not found' });
-    }
+    const dish = await fetchDishById(req.params.id);
+    if (!dish) return res.status(404).json({ message: 'Dish not found' });
     res.json(dish);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-router.patch('/dish/:id',authMiddleware, async (req, res) => {
+router.patch('/dish/:id', authMiddleware, async (req, res) => {
   try {
-    const updatedDish = await Dish.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedDish) return res.status(404).json({ message: 'Dish not found' });
+    const { id } = req.params;
+    const current = await fetchDishById(id);
+    if (!current) return res.status(404).json({ message: 'Dish not found' });
 
-    clearCache('dishes');
+    const { error } = await supabase.rpc('update_dish_relations', {
+      p_dish_id: id,
+      p_name: req.body.name ?? current.name,
+      p_description: req.body.description ?? current.description,
+      p_source_url: req.body.sourceUrl ?? current.sourceUrl,
+      p_category_ids: req.body.categoryIds ?? current.categoryIds,
+      p_ingredients: req.body.ingredients ?? current.ingredients,
+      p_steps: req.body.steps ?? current.steps,
+    });
+    if (error) return res.status(400).json({ message: error.message });
+
+    const updatedDish = await fetchDishById(id);
     res.json(updatedDish);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -62,107 +78,84 @@ router.delete('/dish/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const deletedDish = await Dish.findByIdAndDelete(id);
-    if (!deletedDish) return res.status(404).json({ message: 'Dish not found' });
-
-    // Delete all Cloudinary resources in this recipe folder
-    const folderPrefix = `MyKitchen/recipes/${id}`;
-
-    try {
-      // remove all assets under this folder
-      await cloudinary.api.delete_resources_by_prefix(folderPrefix);
-      // remove the folder itself
-      await cloudinary.api.delete_folder(folderPrefix);
-    } catch (cloudErr) {
-      console.error('Error deleting Cloudinary folder:', cloudErr);
-      // we won't fail the whole request for this, just log it
+    const { data: images } = await supabase.from('dish_images').select('storage_path').eq('dish_id', id);
+    if (images && images.length > 0) {
+      await supabase.storage.from('dish-images').remove(images.map((img) => img.storage_path));
     }
 
-    clearCache('dishes');
+    const { error, count } = await supabase.from('dishes').delete({ count: 'exact' }).eq('id', id);
+    if (error) return res.status(400).json({ message: error.message });
+    if (!count) return res.status(404).json({ message: 'Dish not found' });
+
     res.json({ message: 'Dish deleted successfully' });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-
 // POST /api/food/dish/:id/images
-router.post(
-  '/dish/:id/images',
-  authMiddleware,
-  upload.single('image'),
-  async (req, res) => {
-    try {
-      const { id } = req.params;
+router.post('/dish/:id/images', authMiddleware, upload.single('image'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!req.file) return res.status(400).json({ message: 'No image file provided' });
 
-      if (!req.file) {
-        return res.status(400).json({ message: 'No image file provided' });
-      }
+    const { data: dish } = await supabase.from('dishes').select('id').eq('id', id).single();
+    if (!dish) return res.status(404).json({ message: 'Dish not found' });
 
-      const dish = await Dish.findById(id);
-      if (!dish) {
-        return res.status(404).json({ message: 'Dish not found' });
-      }
+    const ext = (req.file.mimetype.split('/')[1] || 'jpg').split(';')[0];
+    const storagePath = `recipes/${id}/${crypto.randomUUID()}.${ext}`;
 
-      // Convert buffer to data URI for Cloudinary
-      const fileStr = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-
-      const folderPath = `MyKitchen/recipes/${id}`; // 👈 folder per recipe
-
-      const uploadResult = await cloudinary.uploader.upload(fileStr, {
-        folder: folderPath,
-      });
-
-      const imageEntry = {
-        url: uploadResult.secure_url,
-        publicId: uploadResult.public_id,
-      };
-
-      dish.images = dish.images || [];
-      dish.images.push(imageEntry);
-      await dish.save();
-
-      clearCache('dishes');
-
-      return res.status(201).json(dish); // return updated dish
-    } catch (error) {
-      console.error('Error uploading image:', error);
+    const { error: uploadError } = await supabase.storage
+      .from('dish-images')
+      .upload(storagePath, req.file.buffer, { contentType: req.file.mimetype });
+    if (uploadError) {
+      console.error('Error uploading image:', uploadError);
       return res.status(500).json({ message: 'Failed to upload image' });
     }
-  }
-);
 
-// DELETE /api/food/dish/:id/images/:publicId
-router.delete(
-  '/dish/:id/images/:publicId',
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { id, publicId } = req.params;
+    const { count } = await supabase
+      .from('dish_images')
+      .select('*', { count: 'exact', head: true })
+      .eq('dish_id', id);
 
-      const dish = await Dish.findById(id);
-      if (!dish) {
-        return res.status(404).json({ message: 'Dish not found' });
-      }
-
-      // Delete from Cloudinary
-      await cloudinary.uploader.destroy(publicId);
-
-      // Remove from document
-      dish.images = (dish.images || []).filter(
-        (img) => img.publicId !== publicId
-      );
-      await dish.save();
-
-      clearCache('dishes');
-
-      return res.json(dish);
-    } catch (error) {
-      console.error('Error deleting image:', error);
-      return res.status(500).json({ message: 'Failed to delete image' });
+    const { error: insertError } = await supabase
+      .from('dish_images')
+      .insert({ dish_id: id, storage_path: storagePath, position: count || 0 });
+    if (insertError) {
+      console.error('Error saving image record:', insertError);
+      return res.status(500).json({ message: 'Failed to save image record' });
     }
-  }
-);
 
+    const updatedDish = await fetchDishById(id);
+    return res.status(201).json(updatedDish);
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    return res.status(500).json({ message: 'Failed to upload image' });
+  }
+});
+
+// DELETE /api/food/dish/:id/images/:imageId
+router.delete('/dish/:id/images/:imageId', authMiddleware, async (req, res) => {
+  try {
+    const { id, imageId } = req.params;
+
+    const { data: img } = await supabase
+      .from('dish_images')
+      .select('storage_path')
+      .eq('id', imageId)
+      .eq('dish_id', id)
+      .single();
+    if (!img) return res.status(404).json({ message: 'Image not found' });
+
+    await supabase.storage.from('dish-images').remove([img.storage_path]);
+    await supabase.from('dish_images').delete().eq('id', imageId);
+
+    const updatedDish = await fetchDishById(id);
+    return res.json(updatedDish);
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    return res.status(500).json({ message: 'Failed to delete image' });
+  }
+});
 
 module.exports = router;

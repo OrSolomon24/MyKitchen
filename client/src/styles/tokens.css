@@ -1,0 +1,58 @@
+:root {
+  /* Color */
+  --color-bg: #faf6f0;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f3ede3;
+  --color-border: #e6ddce;
+
+  --color-primary: #3f6b34;
+  --color-primary-dark: #2e4f26;
+  --color-primary-tint: #eaf1e6;
+
+  --color-accent: #c1603c;
+  --color-accent-dark: #a34d2f;
+  --color-accent-tint: #fbeae2;
+
+  --color-danger: #c0392b;
+  --color-danger-dark: #9c2e22;
+  --color-danger-tint: #fbe9e7;
+
+  --color-text: #2b2620;
+  --color-text-muted: #6b6255;
+  --color-text-on-dark: #fdfaf6;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 3px rgba(43, 38, 32, 0.08);
+  --shadow-md: 0 6px 16px rgba(43, 38, 32, 0.1);
+  --shadow-lg: 0 16px 40px rgba(43, 38, 32, 0.16);
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Hebrew",
+    "Arial Hebrew", Arial, sans-serif;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-md: 1.125rem;
+  --font-size-lg: 1.375rem;
+  --font-size-xl: 1.75rem;
+  --font-size-2xl: 2.25rem;
+
+  /* Motion */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.25s ease;
+}

@@ -1,70 +1,69 @@
-/* Base styles */
 .navbar {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Space between image and nav */
-  padding: 1rem;
-  color: white;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-6);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.navbar img {
-  height: 50px; /* Adjust size as needed */
+.navbar-brand img {
+  height: 44px;
+  display: block;
 }
 
 .navbar nav {
   display: flex;
-  gap: 1rem; /* Space between nav items */
+  align-items: center;
+  gap: var(--space-5);
 }
 
 .navbar a {
-  color: #34672d;
+  color: var(--color-primary);
   text-decoration: none;
-  font-size: 1rem;
-  font-weight: bold; 
-  transition: color 0.3s;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  transition: color var(--transition-fast);
 }
 
 .navbar a:hover {
-  color: #2b4f26;
+  color: var(--color-accent);
 }
 
-/* Responsive styles */
-@media (max-width: 768px) {
+.navbar-logout {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: color var(--transition-fast);
+}
+
+.navbar-logout:hover {
+  color: var(--color-danger);
+}
+
+@media (max-width: 600px) {
   .navbar {
-    flex-direction: row; /* Ensure items stay in a row on mobile */
-    align-items: center; /* Center items vertically */
-    padding: 0.5rem;
+    padding: var(--space-3) var(--space-4);
   }
 
-  .navbar img {
-    height: 60px; /* Increase size for mobile */
+  .navbar-brand img {
+    height: 36px;
   }
 
   .navbar nav {
-    margin-left: auto; /* Push nav to the right */
-    gap: 0.5rem; /* Reduce gap between nav items on mobile */
+    gap: var(--space-3);
   }
 
-  .navbar a {
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .navbar {
-    padding: 0.5rem;
-  }
-
-  .navbar img {
-    height: 70px; /* Further increase size for smaller screens */
-  }
-
-  .navbar nav {
-    margin-left: auto; /* Push nav to the right */
-    gap: 0.5rem; /* Reduce gap between nav items on mobile */
-  }
-
-  .navbar a {
-    font-size: 0.8rem;
+  .navbar a,
+  .navbar-logout {
+    font-size: var(--font-size-sm);
   }
 }
