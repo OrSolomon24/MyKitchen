@@ -43,16 +43,18 @@ export const Recipe = () => {
     if (queriedDish) setDish(queriedDish);
   }, [queriedDish]);
 
+  const isLinkOnly = Boolean(dish?.sourceUrl) && !dish?.ingredients?.length && !dish?.steps?.length;
+
   useEffect(() => {
     const checkProxy = async () => {
-      if (dish?.sourceUrl) {
+      if (isLinkOnly) {
         const proxyNeeded = await checkIfProxyIsNeeded(dish.sourceUrl);
         setUseProxy(proxyNeeded);
       }
     };
 
     checkProxy();
-  }, [dish?.sourceUrl]);
+  }, [isLinkOnly, dish?.sourceUrl]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -185,7 +187,7 @@ export const Recipe = () => {
           </div>
 
         </div>
-      ) : dish.sourceUrl ? (
+      ) : isLinkOnly ? (
         <div className="flex flex-col gap-4">
           <RecipeField label={dish.name} field="description" dish={dish} />
           <div className="h-[80vh] w-full overflow-hidden rounded-lg shadow-md">
