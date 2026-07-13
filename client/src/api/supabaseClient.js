@@ -8,7 +8,11 @@ export const supabase = createClient(
 // Supabase Auth is email-based; this app's login UX is username-based.
 // Usernames are mapped to a fake, non-routable email domain so Supabase
 // Auth (sessions, JWT verification, etc.) can be used unchanged underneath.
+// Inputs that already contain '@' are treated as full email addresses,
+// so accounts created with a real email (e.g. gmail) can log in too.
 const USERNAME_EMAIL_DOMAIN = 'mykitchen.local';
 
-export const usernameToEmail = (username) =>
-  `${username.trim().toLowerCase()}@${USERNAME_EMAIL_DOMAIN}`;
+export const usernameToEmail = (username) => {
+  const input = username.trim().toLowerCase();
+  return input.includes('@') ? input : `${input}@${USERNAME_EMAIL_DOMAIN}`;
+};
