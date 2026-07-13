@@ -58,16 +58,25 @@ function shapeDishListItem(row) {
   };
 }
 
-async function fetchDishById(id) {
-  const { data, error } = await supabase.from('dishes').select(DISH_SELECT).eq('id', id).single();
+// Every read is scoped to the owning user: the server uses the
+// service-role key (bypasses RLS), so this filter is what keeps one
+// family member's recipes invisible to another.
+async function fetchDishById(id, userId) {
+  const { data, error } = await supabase
+    .from('dishes')
+    .select(DISH_SELECT)
+    .eq('id', id)
+    .eq('created_by', userId)
+    .single();
   if (error || !data) return null;
   return shapeDish(data);
 }
 
-async function fetchDishListView() {
+async function fetchDishListView(userId) {
   const { data, error } = await supabase
     .from('dishes')
     .select(DISH_LIST_SELECT)
+    .eq('created_by', userId)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data.map(shapeDishListItem);

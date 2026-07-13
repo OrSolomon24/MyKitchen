@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/dish', authMiddleware, async (req, res) => {
   try {
-    const dishes = await fetchDishListView();
+    const dishes = await fetchDishListView(req.user.id);
     res.json(dishes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -29,11 +29,11 @@ router.post('/dish', authMiddleware, async (req, res) => {
       p_category_ids: categoryIds || [],
       p_ingredients: ingredients || [],
       p_steps: steps || [],
-      p_created_by: req.user?.id || null,
+      p_created_by: req.user.id,
     });
     if (error) return res.status(400).json({ message: error.message });
 
-    const newDish = await fetchDishById(newId);
+    const newDish = await fetchDishById(newId, req.user.id);
     res.status(201).json(newDish);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -42,7 +42,7 @@ router.post('/dish', authMiddleware, async (req, res) => {
 
 router.get('/dish/:id', authMiddleware, async (req, res) => {
   try {
-    const dish = await fetchDishById(req.params.id);
+    const dish = await fetchDishById(req.params.id, req.user.id);
     if (!dish) return res.status(404).json({ message: 'Dish not found' });
     res.json(dish);
   } catch (error) {
@@ -53,7 +53,9 @@ router.get('/dish/:id', authMiddleware, async (req, res) => {
 router.patch('/dish/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const current = await fetchDishById(id);
+    // fetchDishById is owner-scoped, so this doubles as the ownership check
+    // before the RPC (which trusts its caller) rewrites the dish.
+    const current = await fetchDishById(id, req.user.id);
     if (!current) return res.status(404).json({ message: 'Dish not found' });
 
     const { error } = await supabase.rpc('update_dish_relations', {
@@ -67,7 +69,7 @@ router.patch('/dish/:id', authMiddleware, async (req, res) => {
     });
     if (error) return res.status(400).json({ message: error.message });
 
-    const updatedDish = await fetchDishById(id);
+    const updatedDish = await fetchDishById(id, req.user.id);
     res.json(updatedDish);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -78,12 +80,26 @@ router.delete('/dish/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Confirm ownership before touching storage — otherwise a user could
+    // wipe another user's image files even if the row delete failed.
+    const { data: dish } = await supabase
+      .from('dishes')
+      .select('id')
+      .eq('id', id)
+      .eq('created_by', req.user.id)
+      .single();
+    if (!dish) return res.status(404).json({ message: 'Dish not found' });
+
     const { data: images } = await supabase.from('dish_images').select('storage_path').eq('dish_id', id);
     if (images && images.length > 0) {
       await supabase.storage.from('dish-images').remove(images.map((img) => img.storage_path));
     }
 
-    const { error, count } = await supabase.from('dishes').delete({ count: 'exact' }).eq('id', id);
+    const { error, count } = await supabase
+      .from('dishes')
+      .delete({ count: 'exact' })
+      .eq('id', id)
+      .eq('created_by', req.user.id);
     if (error) return res.status(400).json({ message: error.message });
     if (!count) return res.status(404).json({ message: 'Dish not found' });
 
@@ -99,7 +115,12 @@ router.post('/dish/:id/images', authMiddleware, upload.single('image'), async (r
     const { id } = req.params;
     if (!req.file) return res.status(400).json({ message: 'No image file provided' });
 
-    const { data: dish } = await supabase.from('dishes').select('id').eq('id', id).single();
+    const { data: dish } = await supabase
+      .from('dishes')
+      .select('id')
+      .eq('id', id)
+      .eq('created_by', req.user.id)
+      .single();
     if (!dish) return res.status(404).json({ message: 'Dish not found' });
 
     const ext = (req.file.mimetype.split('/')[1] || 'jpg').split(';')[0];
@@ -126,7 +147,7 @@ router.post('/dish/:id/images', authMiddleware, upload.single('image'), async (r
       return res.status(500).json({ message: 'Failed to save image record' });
     }
 
-    const updatedDish = await fetchDishById(id);
+    const updatedDish = await fetchDishById(id, req.user.id);
     return res.status(201).json(updatedDish);
   } catch (error) {
     console.error('Error uploading image:', error);
@@ -139,6 +160,14 @@ router.delete('/dish/:id/images/:imageId', authMiddleware, async (req, res) => {
   try {
     const { id, imageId } = req.params;
 
+    const { data: dish } = await supabase
+      .from('dishes')
+      .select('id')
+      .eq('id', id)
+      .eq('created_by', req.user.id)
+      .single();
+    if (!dish) return res.status(404).json({ message: 'Dish not found' });
+
     const { data: img } = await supabase
       .from('dish_images')
       .select('storage_path')
@@ -150,7 +179,7 @@ router.delete('/dish/:id/images/:imageId', authMiddleware, async (req, res) => {
     await supabase.storage.from('dish-images').remove([img.storage_path]);
     await supabase.from('dish_images').delete().eq('id', imageId);
 
-    const updatedDish = await fetchDishById(id);
+    const updatedDish = await fetchDishById(id, req.user.id);
     return res.json(updatedDish);
   } catch (error) {
     console.error('Error deleting image:', error);
