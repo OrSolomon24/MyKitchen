@@ -1,52 +1,59 @@
 import React from 'react';
 import { DishCardSkeleton } from '../skeletons/DishCardSkeleton';
+import { DishCard } from '../common/DishCard';
+import { LogoMark } from '../common/Logo';
 
-const RecipesList = ({ dishes, selectedCategory, selectedCategoryName, onDishClick, isLoading }) => {
-  const selectedDishes = selectedCategory
-    ? dishes.filter(dish => dish.categoryIds?.includes(selectedCategory))
-    : dishes;
+const RecipesList = ({
+  dishes,
+  selectedCategoryName,
+  searchTerm,
+  onDishClick,
+  isLoading,
+  onClearFilters,
+  hasActiveFilters,
+}) => {
+  const emptyMessage = searchTerm?.trim()
+    ? `לא נמצאו מנות שמתאימות לחיפוש ”${searchTerm.trim()}”`
+    : selectedCategoryName
+      ? `אין עדיין מנות בקטגוריה ”${selectedCategoryName}”`
+      : 'אין עדיין מתכונים במטבח';
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-bold text-primary">{selectedCategoryName || "כל המנות"}</h2>
+      <div className="mb-4 flex flex-wrap items-baseline gap-2">
+        <h2 className="m-0 font-display text-lg font-bold text-ink">
+          {selectedCategoryName || 'כל המנות'}
+        </h2>
+        {!isLoading && (
+          <span className="text-sm text-text-muted">· {dishes.length} מתכונים</span>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
           {Array.from({ length: 6 }).map((_, i) => (
             <DishCardSkeleton key={i} />
           ))}
         </div>
-      ) : selectedDishes.length > 0 ? (
+      ) : dishes.length > 0 ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
-          {selectedDishes.map((dish) => (
-            <div
-              key={dish.id}
-              onClick={() => onDishClick(dish.id)}
-              className="cursor-pointer overflow-hidden rounded-md bg-surface shadow-sm transition-all duration-150 hover:-translate-y-1 hover:shadow-md active:translate-y-0"
-            >
-              {dish.images?.[0] && (
-                <div className="aspect-[4/3] w-full overflow-hidden bg-surface-muted">
-                  <img
-                    src={dish.images[0].url}
-                    alt={dish.name}
-                    loading="lazy"
-                    width={220}
-                    height={165}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              )}
-              <div className="p-4">
-                <span className="mb-1 block font-bold text-text">{dish.name}</span>
-                {dish.description && (
-                  <p className="m-0 line-clamp-2 text-sm text-text-muted">{dish.description}</p>
-                )}
-              </div>
-            </div>
+          {dishes.map((dish) => (
+            <DishCard key={dish.id} dish={dish} onClick={() => onDishClick(dish.id)} />
           ))}
         </div>
       ) : (
-        <div className="my-8 text-center">
-          <p className="text-md font-semibold text-text-muted">אין מנות בקטגוריה הזו</p>
+        <div className="flex flex-col items-center gap-4 rounded-lg bg-surface px-6 py-12 text-center shadow-sm">
+          <LogoMark className="h-16 w-16 opacity-30" />
+          <p className="m-0 text-md font-semibold text-text">{emptyMessage}</p>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={onClearFilters}
+              className="rounded-full bg-primary px-5 py-2.5 font-semibold text-text-on-dark transition-colors hover:bg-primary-dark"
+            >
+              הצגת כל המתכונים
+            </button>
+          )}
         </div>
       )}
     </div>

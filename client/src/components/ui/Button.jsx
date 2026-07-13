@@ -8,7 +8,7 @@ const BASE =
   'min-h-11';
 
 const VARIANTS = {
-  primary: 'bg-accent text-text-on-dark shadow-sm px-5 py-3 hover:not-disabled:bg-accent-dark hover:not-disabled:shadow-md',
+  primary: 'bg-primary text-text-on-dark shadow-sm px-5 py-3 hover:not-disabled:bg-primary-dark hover:not-disabled:shadow-md',
   secondary:
     'bg-surface text-primary border-[1.5px] border-border px-5 py-3 hover:not-disabled:border-primary hover:not-disabled:bg-primary-tint',
   danger: 'bg-danger text-text-on-dark px-5 py-3 hover:not-disabled:bg-danger-dark',

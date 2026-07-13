@@ -4,8 +4,10 @@ import { FaHome, FaUtensils, FaPlusCircle, FaSignInAlt, FaSignOutAlt } from 'rea
 import { useAuth } from '../../context/AuthContext';
 
 const tabClass = ({ isActive }) =>
-  `flex flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors min-h-11 ${
-    isActive ? 'text-primary' : 'text-text-muted'
+  `relative flex min-h-12 flex-1 flex-col items-center justify-center gap-1 py-2 text-xs transition-colors ${
+    isActive
+      ? 'font-semibold text-primary-dark after:absolute after:top-0 after:h-0.5 after:w-8 after:rounded-full after:bg-accent'
+      : 'font-medium text-text-muted'
   }`;
 
 export const BottomTabBar = () => {
@@ -20,7 +22,7 @@ export const BottomTabBar = () => {
   return (
     <nav
       aria-label="ניווט ראשי"
-      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-surface shadow-lg md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-surface/95 shadow-lg backdrop-blur-sm print:hidden md:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <NavLink to="/" end className={tabClass}>
@@ -33,21 +35,21 @@ export const BottomTabBar = () => {
       </NavLink>
       <NavLink to="/addRecipe" className={tabClass}>
         <FaPlusCircle className="text-lg" />
-        הוסף
+        הוספה
       </NavLink>
       {isAuthenticated ? (
         <button
           type="button"
           onClick={handleLogout}
-          className="flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-medium text-text-muted transition-colors hover:text-danger"
+          className="flex min-h-12 flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-medium text-text-muted transition-colors hover:text-danger"
         >
           <FaSignOutAlt className="text-lg" />
-          התנתק
+          התנתקות
         </button>
       ) : (
         <NavLink to="/signin" className={tabClass}>
           <FaSignInAlt className="text-lg" />
-          התחבר
+          התחברות
         </NavLink>
       )}
     </nav>

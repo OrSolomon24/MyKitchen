@@ -10,10 +10,11 @@ import {
 } from './dishes';
 import { queryKeys } from './queryKeys';
 
-export function useDishes() {
+export function useDishes(options = {}) {
   return useQuery({
     queryKey: queryKeys.dishes,
     queryFn: fetchDishes,
+    ...options,
   });
 }
 

@@ -1,25 +1,28 @@
 :root {
-  /* Color */
-  --color-bg: #faf6f0;
-  --color-surface: #ffffff;
-  --color-surface-muted: #f3ede3;
-  --color-border: #e6ddce;
+  /* Color — mirrors the @theme block in tailwind.css */
+  --color-bg: #faf5eb;
+  --color-surface: #fffdf8;
+  --color-surface-muted: #f1e9d8;
+  --color-border: #e2d8c0;
 
-  --color-primary: #3f6b34;
-  --color-primary-dark: #2e4f26;
-  --color-primary-tint: #eaf1e6;
+  --color-ink: #2a3220;
+  --color-ink-soft: #3d4630;
 
-  --color-accent: #c1603c;
-  --color-accent-dark: #a34d2f;
-  --color-accent-tint: #fbeae2;
+  --color-primary: #4a6b33;
+  --color-primary-dark: #354d23;
+  --color-primary-tint: #ecf1e1;
 
-  --color-danger: #c0392b;
-  --color-danger-dark: #9c2e22;
-  --color-danger-tint: #fbe9e7;
+  --color-accent: #a66f1f;
+  --color-accent-dark: #8a5b17;
+  --color-accent-tint: #f7edd8;
 
-  --color-text: #2b2620;
-  --color-text-muted: #6b6255;
-  --color-text-on-dark: #fdfaf6;
+  --color-danger: #b23a32;
+  --color-danger-dark: #8e2c25;
+  --color-danger-tint: #f9e8e6;
+
+  --color-text: #2e2a21;
+  --color-text-muted: #6e6553;
+  --color-text-on-dark: #fbf7ed;
 
   /* Spacing */
   --space-1: 4px;
@@ -38,13 +41,15 @@
   --radius-full: 999px;
 
   /* Shadow */
-  --shadow-sm: 0 1px 3px rgba(43, 38, 32, 0.08);
-  --shadow-md: 0 6px 16px rgba(43, 38, 32, 0.1);
-  --shadow-lg: 0 16px 40px rgba(43, 38, 32, 0.16);
+  --shadow-sm: 0 1px 3px rgba(42, 50, 32, 0.08);
+  --shadow-md: 0 6px 16px rgba(42, 50, 32, 0.1);
+  --shadow-lg: 0 16px 40px rgba(42, 50, 32, 0.16);
 
   /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Hebrew",
-    "Arial Hebrew", Arial, sans-serif;
+  --font-family: "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans Hebrew", "Arial Hebrew", Arial, sans-serif;
+  --font-family-display: "Frank Ruhl Libre", "Noto Serif Hebrew", "David Libre",
+    Georgia, serif;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
   --font-size-md: 1.125rem;
