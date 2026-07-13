@@ -71,7 +71,7 @@ router.post('/ai-import', authMiddleware, async (req, res) => {
       p_category_ids: categoryIds,
       p_ingredients: ingredientsArray,
       p_steps: stepsArray,
-      p_created_by: req.user?.id || null,
+      p_created_by: req.user.id,
     });
 
     if (error) {
@@ -79,7 +79,7 @@ router.post('/ai-import', authMiddleware, async (req, res) => {
       return res.status(500).json({ message: 'Failed to save imported recipe' });
     }
 
-    const newDish = await fetchDishById(newId);
+    const newDish = await fetchDishById(newId, req.user.id);
 
     return res.status(201).json({
       message: 'Recipe imported successfully with AI',
