@@ -3,9 +3,15 @@ const router = express.Router();
 const supabase = require('../lib/supabaseClient');
 const authMiddleware = require('../middleware/authMiddleware');
 
+// Categories are private per user, like dishes: every query is scoped
+// by created_by (the server's service-role key bypasses RLS).
 router.get('/category', authMiddleware, async (req, res) => {
   try {
-    const { data, error } = await supabase.from('categories').select('*').order('name');
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('created_by', req.user.id)
+      .order('name');
     if (error) throw error;
     res.json(data);
   } catch (error) {
@@ -18,7 +24,11 @@ router.post('/category', authMiddleware, async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
 
-    const { data, error } = await supabase.from('categories').insert({ name }).select().single();
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({ name, created_by: req.user.id })
+      .select()
+      .single();
     if (error) throw error;
     res.status(201).json(data);
   } catch (error) {
@@ -44,7 +54,8 @@ router.delete('/category/:id', authMiddleware, async (req, res) => {
     const { error, count: deletedCount } = await supabase
       .from('categories')
       .delete({ count: 'exact' })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('created_by', req.user.id);
     if (error) throw error;
     if (!deletedCount) return res.status(404).json({ message: 'Category not found' });
 

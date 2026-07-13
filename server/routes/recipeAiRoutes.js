@@ -4,6 +4,7 @@ const router = express.Router();
 const supabase = require('../lib/supabaseClient');
 const authMiddleware = require('../middleware/authMiddleware');
 const { fetchDishById } = require('../lib/dishRepo');
+const { allCategoriesOwnedBy } = require('../lib/categoryRepo');
 
 const AGENT_URL = process.env.RECIPE_AGENT_URL || 'http://localhost:8000';
 
@@ -29,6 +30,9 @@ router.post('/ai-import', authMiddleware, async (req, res) => {
       return res
         .status(400)
         .json({ message: 'url, name, description, and categoryIds are required' });
+    }
+    if (!(await allCategoriesOwnedBy(categoryIds, req.user.id))) {
+      return res.status(400).json({ message: 'One or more categories do not exist' });
     }
 
     // 1. Call the Python/FastAPI + Gemini recipe-extraction service

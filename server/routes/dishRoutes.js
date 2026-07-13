@@ -5,6 +5,7 @@ const multer = require('multer');
 const supabase = require('../lib/supabaseClient');
 const authMiddleware = require('../middleware/authMiddleware');
 const { fetchDishById, fetchDishListView } = require('../lib/dishRepo');
+const { allCategoriesOwnedBy } = require('../lib/categoryRepo');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -21,6 +22,9 @@ router.post('/dish', authMiddleware, async (req, res) => {
   try {
     const { name, description, sourceUrl, categoryIds, ingredients, steps } = req.body;
     if (!name) return res.status(400).json({ message: 'name is required' });
+    if (!(await allCategoriesOwnedBy(categoryIds, req.user.id))) {
+      return res.status(400).json({ message: 'One or more categories do not exist' });
+    }
 
     const { data: newId, error } = await supabase.rpc('create_dish_with_relations', {
       p_name: name,
@@ -57,6 +61,9 @@ router.patch('/dish/:id', authMiddleware, async (req, res) => {
     // before the RPC (which trusts its caller) rewrites the dish.
     const current = await fetchDishById(id, req.user.id);
     if (!current) return res.status(404).json({ message: 'Dish not found' });
+    if (req.body.categoryIds && !(await allCategoriesOwnedBy(req.body.categoryIds, req.user.id))) {
+      return res.status(400).json({ message: 'One or more categories do not exist' });
+    }
 
     const { error } = await supabase.rpc('update_dish_relations', {
       p_dish_id: id,
