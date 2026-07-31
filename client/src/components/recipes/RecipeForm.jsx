@@ -5,11 +5,13 @@ import { Textarea } from '../ui/Textarea';
 
 const fieldLabel = 'mt-3 mb-2 block font-semibold text-primary';
 
-export const RecipeForm = ({ dish, handleChange }) => {
+export const RecipeForm = ({ dish, handleChange, isLinkOnly }) => {
   return (
     <div className="rounded-md bg-surface p-5 shadow-sm">
-      {/* Conditionally render the name, URL, and description fields if a URL is present */}
-      {dish.sourceUrl ? (
+      {/* Recipes with no parsed ingredients/steps (pure link imports) only get
+          name/URL/description fields; everything else -- including AI-imported
+          recipes, which also carry a sourceUrl -- gets the full editable form */}
+      {isLinkOnly ? (
         <>
           <label htmlFor="name" className={fieldLabel}>שם המתכון</label>
           <Input

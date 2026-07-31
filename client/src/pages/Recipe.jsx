@@ -151,11 +151,14 @@ export const Recipe = () => {
     });
   }, []);
 
+  const cleanLines = (lines) =>
+    (lines || []).map((line) => line.trim()).filter((line) => line !== '');
+
   const handleSave = async () => {
     try {
-      const updatedDish = dish.sourceUrl
+      const updatedDish = isLinkOnly
         ? { ...dish, ingredients: undefined, steps: undefined }
-        : dish;
+        : { ...dish, ingredients: cleanLines(dish.ingredients), steps: cleanLines(dish.steps) };
 
       const response = await updateDishMutation.mutateAsync(updatedDish);
       setDish(response);
@@ -200,9 +203,14 @@ export const Recipe = () => {
   const handleChange = (field, value) => {
     setDish((prev) => ({
       ...prev,
+      // Keep the raw split lines (including blanks) while typing so the
+      // textarea round-trips exactly what the user entered -- trimming/
+      // filtering here would strip a just-pressed Enter before the user
+      // could type on the new row, making it look like Enter did nothing.
+      // Blank/whitespace-only lines get cleaned up on save instead.
       [field]:
         field === 'ingredients' || field === 'steps'
-          ? value.split('\n').map((line) => line.trim()).filter((line) => line !== '')
+          ? value.split('\n')
           : value,
     }));
   };
@@ -317,7 +325,7 @@ export const Recipe = () => {
 
       {isEditing ? (
         <div className="flex flex-col gap-4">
-          <RecipeForm dish={dish} handleChange={handleChange} />
+          <RecipeForm dish={dish} handleChange={handleChange} isLinkOnly={isLinkOnly} />
 
           {dish.images?.length > 0 && (
             <ImageGallery
