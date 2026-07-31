@@ -13,4 +13,6 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 # Free-tier model on OpenRouter (no Gemini free tier is currently offered there).
 # Chosen because it's one of the few free models supporting native structured
 # outputs and tool calling (needed for reliable JSON + future web-fetch tools).
-OPENROUTER_MODEL_NAME = "tencent/hy3:free"
+# Previously "tencent/hy3:free", which OpenRouter discontinued (free slug now
+# 404s, only the paid "tencent/hy3" remains).
+OPENROUTER_MODEL_NAME = "google/gemma-4-26b-a4b-it:free"
