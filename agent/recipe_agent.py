@@ -89,20 +89,27 @@ async def extract_recipe_from_url(
     prompt = build_recipe_extraction_prompt(html, name, description, target_language)
 
     # 3. Call the model (structured output, no manual JSON parsing needed).
-    # Free-tier OpenRouter models occasionally degrade to an empty-but-valid
-    # completion under load instead of raising an error, so a blank result is
-    # retried a couple of times before we treat it as "no recipe found".
+    # Free-tier OpenRouter models occasionally degrade under load instead of
+    # raising a clean error -- either a valid-but-empty completion, or (seen in
+    # production) a malformed response that fails schema validation entirely
+    # (e.g. "{}"). Both cases are retried a couple of times before giving up,
+    # so a single flaky call doesn't fail the whole import.
     max_model_attempts = 3
     ingredients: List[str] = []
     instructions: List[str] = []
+    last_error = None
     for attempt in range(max_model_attempts):
         try:
             recipe = invoke_model(prompt)
         except Exception as e:
+            last_error = e
             import traceback
-            print("[error] Model call failed:")
+            print(f"[warning] Model call failed on attempt {attempt + 1}/{max_model_attempts}:")
             traceback.print_exc()
-            raise HTTPException(status_code=502, detail=f"Recipe extraction service failed: {e}")
+            if attempt < max_model_attempts - 1:
+                await asyncio.sleep(1.5 * (attempt + 1))
+                continue
+            raise HTTPException(status_code=502, detail=f"Recipe extraction service failed: {last_error}")
 
         ingredients = recipe.ingredients
         instructions = recipe.instructions
