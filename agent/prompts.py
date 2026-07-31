@@ -21,6 +21,12 @@ You MUST return a JSON object with this exact structure:
 
 Rules:
 - "ingredients" is a flat list of strings, one ingredient per item.
+- Each ingredient string MUST include its quantity/amount exactly as written in
+  the source (e.g. "2 eggs", "250ml milk", "1 tsp vanilla extract"), not just
+  the ingredient name on its own.
+- Only include a quantity if the source text actually specifies one. If no
+  amount is given for an ingredient, output just the ingredient name -- do NOT
+  invent, guess, or assume a quantity that isn't written.
 - "instructions" is a flat ordered list of steps.
 - You MUST return all ingredients and instructions in {target_language}, even if the original recipe is in another language. Translate them to {target_language} if needed.
 - Do NOT add "name" or "description" fields (the caller already has them).
