@@ -20,7 +20,13 @@ class ParseRecipeResponse(BaseModel):
 class RecipeExtraction(BaseModel):
     """A recipe's ingredients and instructions, extracted from a web page."""
 
+    # default_factory=list (not a bare required field) so a malformed/partial
+    # model response -- e.g. some free-tier backends occasionally emit "{}"
+    # instead of a schema-conforming object -- still parses successfully as
+    # "nothing found" rather than raising a hard pydantic ValidationError that
+    # bypasses the empty-result retry logic in recipe_agent.py.
     ingredients: List[str] = Field(
+        default_factory=list,
         description=(
             "Flat list of ingredient strings, one ingredient per item. Each string "
             "MUST include the quantity/amount exactly as stated in the source "
@@ -30,5 +36,6 @@ class RecipeExtraction(BaseModel):
         )
     )
     instructions: List[str] = Field(
-        description="Ordered list of instruction steps."
+        default_factory=list,
+        description="Ordered list of instruction steps.",
     )
